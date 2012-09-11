@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     mview->setScene(mscene);
     setCentralWidget(mview);
     setWindowTitle(tr("Map Demo"));
+    setWindowIcon(":/Icon/RLSIcon.png");
 }
 
 MainWindow::~MainWindow()

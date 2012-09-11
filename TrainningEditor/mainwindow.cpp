@@ -7,18 +7,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    void createActions();
-    void createMenus();
-    void createContectMenu();
-    void createToolBars();
-    void createStatusBar();
+    createActions();
+    createMenus();
+    createContectMenu();
+    createToolBars();
+    createStatusBar();
 
-    trainningMap = new QPixmap("Resources/lenoblast-obz.jpg");
     mscene = new MapScene();
-    map = new MapItem(*trainningMap);
-    mscene->addItem(map);
     mview = new MapView();
-    mview->setDragMode(QGraphicsView::ScrollHandDrag);
+    mview->setBaseSize(1000,700);
     mview->setScene(mscene);
     setCentralWidget(mview);
     setWindowTitle(tr("Map Demo"));
@@ -32,11 +29,36 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
+    OpenMapAction = new QAction( tr("Open map"), this );
+    OpenMapAction->setIcon(QIcon(":/Icon/map.png"));
+    OpenMapAction->setStatusTip(tr("Open map"));
+    connect(OpenMapAction,SIGNAL(triggered()),this,SLOT(openMap()));
 
+    dragMapMode = new QAction( tr("Drag mode"), this );
+    dragMapMode->setStatusTip(tr("Activate drag mode"));
+    dragMapMode->setIcon(QIcon(":/Icon/cursor_drag_hand.png"));
+    dragMapMode->setCheckable(true);
+    connect(dragMapMode,SIGNAL(triggered()),this,SLOT(dragMapModeOn()));
+
+    clickMapMode = new QAction( tr("Click mode"), this );
+    clickMapMode->setStatusTip(tr("Activate Click mode"));
+    clickMapMode->setIcon(QIcon(":/Icon/cursor_arrow.png"));
+    clickMapMode->setCheckable(true);
+    connect(clickMapMode,SIGNAL(triggered()),this,SLOT(clickMapModeOn()));
+
+    mapModes = new QActionGroup(this);
+    mapModes->addAction(dragMapMode);
+    mapModes->addAction(clickMapMode);
+    mapModes->setExclusive(true);
 }
 void MainWindow::createMenus()
 {
-
+    fileMenu = menuBar()->addMenu(tr("File"));
+    fileMenu->addAction(OpenMapAction);
+    mapMenu = menuBar()->addMenu(tr("Map"));
+    mapMenu->addAction(dragMapMode);
+    mapMenu->addAction(clickMapMode);
+    mapMenu->setEnabled(false);
 }
 
 void MainWindow::createContectMenu()
@@ -46,11 +68,36 @@ void MainWindow::createContectMenu()
 
 void MainWindow::createToolBars()
 {
-
+    mapToolBar = addToolBar(tr("Map"));
+    mapToolBar->addAction(dragMapMode);
+    mapToolBar->addAction(clickMapMode);
+    mapToolBar->setEnabled(false);
 }
 
 void MainWindow::createStatusBar()
 {
+    statusBar();
+}
 
+void MainWindow::openMap()
+{
+    QString mapFileName = QFileDialog::getOpenFileName(this, tr("Open map"),".", tr("map files (*.jpg *.gif)"));
+    trainningMap = new QPixmap(mapFileName);
+    map = new MapItem(*trainningMap);
+    mscene->addItem(map);
+    mapMenu->setEnabled(true);
+    mapToolBar->setEnabled(true);
+    dragMapMode->setChecked(true);
+    mview->setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
+void MainWindow::dragMapModeOn()
+{
+    mview->setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
+void MainWindow::clickMapModeOn()
+{
+    mview->setDragMode(QGraphicsView::NoDrag);
 }
 

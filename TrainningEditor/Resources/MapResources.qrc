@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/Icon">
         <file>RLSIcon.png</file>
+        <file>map.png</file>
+        <file>arrow_move.png</file>
+        <file>cursor_arrow.png</file>
+        <file>cursor_drag_hand.png</file>
     </qresource>
 </RCC>

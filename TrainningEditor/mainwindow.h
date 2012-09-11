@@ -14,7 +14,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private slots:
-    void openMap();
+ //   void openMap();
 
 private:
     void createActions();

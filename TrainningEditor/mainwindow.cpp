@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     void createToolBars();
     void createStatusBar();
 
-    trainningMap = new QPixmap("lenoblast-obz.jpg");
+    trainningMap = new QPixmap("Resources/lenoblast-obz.jpg");
     mscene = new MapScene();
     map = new MapItem(*trainningMap);
     mscene->addItem(map);
@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     mview->setScene(mscene);
     setCentralWidget(mview);
     setWindowTitle(tr("Map Demo"));
-    setWindowIcon(":/Icon/RLSIcon.png");
+    setWindowIcon(QIcon(":/Icon/RLSIcon.png"));
 }
 
 MainWindow::~MainWindow()

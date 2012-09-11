@@ -52,19 +52,9 @@ void Indicator::drawCircle(QPixmap &_m, QPoint _center, int _rad)
     painter.begin(&_m);
     painter.setRenderHint(QPainter::Antialiasing);
    // QPen p(Qt::green);
-    painter.setPen(Qt::green);
+    painter.setBrush(Qt::green);
     painter.fillRect(0,0,_m.width(), _m.height(), Qt::white);
     painter.drawEllipse(_center, _rad, _rad);
-
-
-    int tmp = _rad*_rad;
-    for(int i = (-1)*tmp; i <= tmp; i++)
-    {
-        double y =(double) tmp* (double) (1 - (double) (i*i)/(tmp));
-        double y1 = sqrt((int) y);
-        painter.drawLine(_center.x() + i, _center.y() - y1,
-                     _center.x() + i, _center.y() + y1);
-    }
     painter.end();
 }
 

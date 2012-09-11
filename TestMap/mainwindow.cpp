@@ -7,6 +7,12 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    void createActions();
+    void createMenus();
+    void createContectMenu();
+    void createToolBars();
+    void createStatusBar();
+
     trainningMap = new QPixmap("lenoblast-obz.jpg");
     mscene = new MapScene();
     map = new MapItem(*trainningMap);
@@ -14,20 +20,36 @@ MainWindow::MainWindow(QWidget *parent)
     mview = new MapView();
     mview->setDragMode(QGraphicsView::ScrollHandDrag);
     mview->setScene(mscene);
-    QGraphicsRectItem* rectIt= new QGraphicsRectItem(QRectF(500,100,500,200),map);
-    rectIt->setBrush(QColor(25,103,23));
-    QGraphicsRectItem* rectIt2= new QGraphicsRectItem(QRectF(100,0,20,20),rectIt);
-    rectIt2->setBrush(QColor(105,153,123));
-    rectIt2->setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
-    mscene->addItem(rectIt);
-    mscene->addItem(rectIt2);
     setCentralWidget(mview);
     setWindowTitle(tr("Map Demo"));
-    mview->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
 MainWindow::~MainWindow()
 {
     
+}
+
+void MainWindow::createActions()
+{
+
+}
+void MainWindow::createMenus()
+{
+
+}
+
+void MainWindow::createContectMenu()
+{
+
+}
+
+void MainWindow::createToolBars()
+{
+
+}
+
+void MainWindow::createStatusBar()
+{
+
 }
 

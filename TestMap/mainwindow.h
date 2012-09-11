@@ -13,20 +13,25 @@
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+private slots:
+    void openMap();
 
 private:
     void createActions();
     void createMenus();
     void createContectMenu();
     void createToolBars();
-
+    void createStatusBar();
 
     MapScene *mscene;
     MapView *mview;
     QPixmap *trainningMap;
     MapItem *map;
 
-    QAction* OpenMapAction;
+    QAction *OpenMapAction;
+
+    QToolBar *mapToolBar;
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();

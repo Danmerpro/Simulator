@@ -10,6 +10,8 @@ class Indicator : public QWidget
 
     QTimer timer;
     double angle;
+    static const int framesPerSec = 25;
+    static const int scanInSecs = 10;
 public:
     explicit Indicator(QWidget *parent = 0);
     

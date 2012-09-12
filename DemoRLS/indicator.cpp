@@ -7,6 +7,7 @@ Indicator::Indicator(QWidget *parent) :
 {
     angle = 0;
     connect(&timer, SIGNAL(timeout()), this, SLOT(scan()));
+    timer.setInterval(1000/framesPerSec);
     timer.start();
 }
 
@@ -60,7 +61,7 @@ void Indicator::drawCircle(QPixmap &_m, QPoint _center, int _rad)
 
 void Indicator::scan()
 {
-    angle-=0.05;
+    angle-=(2*M_PI/scanInSecs)/(1000/framesPerSec);
     if(angle <= M_PI * (-2))
         angle = 0;
     update();

@@ -4,6 +4,7 @@
 #include <QtGui/QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QGraphicsEllipseItem>
 #include <QAction>
 #include <QMenu>
 #include <QMenuBar>
@@ -14,6 +15,7 @@
 #include "mapview.h"
 #include "mapscene.h"
 #include "mapitem.h"
+#include "radarline.h"
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +48,7 @@ private:
     QMenu *fileMenu;
     QMenu *mapMenu;
 
+    RadarLine *rl;
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();

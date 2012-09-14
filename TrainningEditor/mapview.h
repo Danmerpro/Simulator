@@ -11,7 +11,7 @@ class MapView : public QGraphicsView
 public:
     MapView();
 protected:
-    void wheelEvent(QWheelEvent *event);
+  //  void wheelEvent(QWheelEvent *event);
 };
 
 #endif // MAPVIEW_H

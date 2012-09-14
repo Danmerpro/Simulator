@@ -15,11 +15,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     mscene = new MapScene();
     mview = new MapView();
-    mview->setBaseSize(1000,700);
+    mview->setBaseSize(500,500);
     mview->setScene(mscene);
+    mview->setRenderHint(QPainter::Antialiasing);
     setCentralWidget(mview);
     setWindowTitle(tr("Map Demo"));
     setWindowIcon(QIcon(":/Icon/RLSIcon.png"));
+    QGraphicsEllipseItem *IKO = new QGraphicsEllipseItem(QRectF(0,0,600,600));
+    IKO->setPen(QPen(Qt::green));
+    IKO->setBrush(QBrush(Qt::black));
+    mscene->addItem(IKO);
+    rl = new RadarLine();
+    mscene->addItem(rl);
+    this->adjustSize();
 }
 
 MainWindow::~MainWindow()

@@ -1,8 +1,4 @@
 #include "mainwindow.h"
-#include "mapview.h"
-#include "mapscene.h"
-#include "mapitem.h"
-#include "radarline.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,22 +8,28 @@ MainWindow::MainWindow(QWidget *parent)
     createContectMenu();
     createToolBars();
     createStatusBar();
-
-    mscene = new MapScene();
-    mview = new MapView();
-    mview->setBaseSize(500,500);
-    mview->setScene(mscene);
-    mview->setRenderHint(QPainter::Antialiasing);
-    setCentralWidget(mview);
-    setWindowTitle(tr("Map Demo"));
+    setWindowTitle(tr("Training Editor"));
     setWindowIcon(QIcon(":/Icon/RLSIcon.png"));
-    QGraphicsEllipseItem *IKO = new QGraphicsEllipseItem(QRectF(0,0,600,600));
-    IKO->setPen(QPen(Qt::green));
-    IKO->setBrush(QBrush(Qt::black));
-    mscene->addItem(IKO);
-    rl = new RadarLine();
-    mscene->addItem(rl);
-    this->adjustSize();
+    QWidget *centralWidget = new QWidget(this);
+    QHBoxLayout* mainLayout = new QHBoxLayout();
+    QVBoxLayout* menuLayout = new QVBoxLayout();
+    QVBoxLayout* sceneLayout = new QVBoxLayout();
+    scene = new TrainningScene( this );
+    rtMenu = new RoutesMenu (this);
+    sceneLayout->addWidget(scene);
+    menuLayout->addWidget(rtMenu);
+    mainLayout->addLayout(sceneLayout);
+    mainLayout->addLayout(menuLayout);
+    mainLayout->setStretch(0,4);
+    mainLayout->setStretch(0,1);
+    centralWidget->setLayout( mainLayout );
+    this->setCentralWidget( centralWidget );
+ //   this->showFullScreen();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *)
+{
+//    scene->setFixedSize(this->width(),this->height());
 }
 
 MainWindow::~MainWindow()
@@ -37,36 +39,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
-    OpenMapAction = new QAction( tr("Open map"), this );
-    OpenMapAction->setIcon(QIcon(":/Icon/map.png"));
-    OpenMapAction->setStatusTip(tr("Open map"));
-    connect(OpenMapAction,SIGNAL(triggered()),this,SLOT(openMap()));
 
-    dragMapMode = new QAction( tr("Drag mode"), this );
-    dragMapMode->setStatusTip(tr("Activate drag mode"));
-    dragMapMode->setIcon(QIcon(":/Icon/cursor_drag_hand.png"));
-    dragMapMode->setCheckable(true);
-    connect(dragMapMode,SIGNAL(triggered()),this,SLOT(dragMapModeOn()));
-
-    clickMapMode = new QAction( tr("Click mode"), this );
-    clickMapMode->setStatusTip(tr("Activate Click mode"));
-    clickMapMode->setIcon(QIcon(":/Icon/cursor_arrow.png"));
-    clickMapMode->setCheckable(true);
-    connect(clickMapMode,SIGNAL(triggered()),this,SLOT(clickMapModeOn()));
-
-    mapModes = new QActionGroup(this);
-    mapModes->addAction(dragMapMode);
-    mapModes->addAction(clickMapMode);
-    mapModes->setExclusive(true);
 }
 void MainWindow::createMenus()
 {
-    fileMenu = menuBar()->addMenu(tr("File"));
-    fileMenu->addAction(OpenMapAction);
-    mapMenu = menuBar()->addMenu(tr("Map"));
-    mapMenu->addAction(dragMapMode);
-    mapMenu->addAction(clickMapMode);
-    mapMenu->setEnabled(false);
+
 }
 
 void MainWindow::createContectMenu()
@@ -76,10 +53,7 @@ void MainWindow::createContectMenu()
 
 void MainWindow::createToolBars()
 {
-    mapToolBar = addToolBar(tr("Map"));
-    mapToolBar->addAction(dragMapMode);
-    mapToolBar->addAction(clickMapMode);
-    mapToolBar->setEnabled(false);
+
 }
 
 void MainWindow::createStatusBar()
@@ -87,25 +61,4 @@ void MainWindow::createStatusBar()
     statusBar();
 }
 
-void MainWindow::openMap()
-{
-    QString mapFileName = QFileDialog::getOpenFileName(this, tr("Open map"),".", tr("map files (*.jpg *.gif)"));
-    trainningMap = new QPixmap(mapFileName);
-    map = new MapItem(*trainningMap);
-    mscene->addItem(map);
-    mapMenu->setEnabled(true);
-    mapToolBar->setEnabled(true);
-    dragMapMode->setChecked(true);
-    mview->setDragMode(QGraphicsView::ScrollHandDrag);
-}
-
-void MainWindow::dragMapModeOn()
-{
-    mview->setDragMode(QGraphicsView::ScrollHandDrag);
-}
-
-void MainWindow::clickMapModeOn()
-{
-    mview->setDragMode(QGraphicsView::NoDrag);
-}
 

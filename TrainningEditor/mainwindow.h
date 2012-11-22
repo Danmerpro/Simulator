@@ -2,28 +2,19 @@
 #define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGraphicsEllipseItem>
 #include <QAction>
 #include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
-#include <QFileDialog>
-#include <QActionGroup>
-#include <QToolBar>
-#include "mapview.h"
-#include "mapscene.h"
-#include "mapitem.h"
-#include "radarline.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QTextCodec>
+#include "routesmenu.h"
+#include "trainningscene.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-private slots:
-    void openMap();
-    void dragMapModeOn();
-    void clickMapModeOn();
 
 private:
     void createActions();
@@ -31,27 +22,13 @@ private:
     void createContectMenu();
     void createToolBars();
     void createStatusBar();
-
-    MapScene *mscene;
-    MapView *mview;
-    QPixmap *trainningMap;
-    MapItem *map;
-
-    QAction *OpenMapAction;
-    QAction *dragMapMode;
-    QAction *clickMapMode;
-
-    QActionGroup *mapModes;
-
-    QToolBar *mapToolBar;
-
-    QMenu *fileMenu;
-    QMenu *mapMenu;
-
-    RadarLine *rl;
+    TrainningScene* scene;
+    RoutesMenu* rtMenu;
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+protected:
+    void resizeEvent(QResizeEvent *);
 };
 
 #endif // MAINWINDOW_H

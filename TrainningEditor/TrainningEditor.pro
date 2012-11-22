@@ -1,17 +1,17 @@
 HEADERS += \
-    radarline.h \
-    mapview.h \
-    mapscene.h \
-    mapitem.h \
-    mainwindow.h
+    mainwindow.h \
+    trainningscene.h \
+    mapobj.h \
+    routesmenu.h \
+    routestable.h
 
 SOURCES += \
-    radarline.cpp \
-    mapview.cpp \
-    mapscene.cpp \
-    mapitem.cpp \
     mainwindow.cpp \
-    main.cpp
+    main.cpp \
+    trainningscene.cpp \
+    mapobj.cpp \
+    routesmenu.cpp \
+    routestable.cpp
 
 RESOURCES += \
     Resources/MapResources.qrc

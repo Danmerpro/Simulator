@@ -20,17 +20,22 @@ private:
     QPen* pen;
     QBrush* brush;
     MapObj* curObj;
+    MapObj* curPoint;
     bool drawlingMode;
     bool editingMode;
 
 public:
     explicit TrainningScene(QWidget *parent = 0);
-    MapObj* ifOnCruve(QPointF p);
-    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );      
+    bool ifOnCurRoute(QPointF p);
+    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );
+    qreal absSC( qreal val );
     
 signals:
+    void newRouteAdded(MapObj *obj);
     
-public slots:
+private slots:
+    void drawlingModeOn();
+    void procesingNewRoute( MapObj *obj );
 
 protected:
     void paintEvent(QPaintEvent *event);

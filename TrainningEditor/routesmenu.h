@@ -20,6 +20,7 @@ private:
     RoutesTable* rtTable;
 public:
     explicit RoutesMenu(QWidget *parent = 0);
+    QPushButton* getNewRouteButton();
     
 signals:
     

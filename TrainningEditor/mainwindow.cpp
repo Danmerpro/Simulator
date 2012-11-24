@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setStretch(0,1);
     centralWidget->setLayout( mainLayout );
     this->setCentralWidget( centralWidget );
+    connect(rtMenu->getNewRouteButton(),SIGNAL(clicked()),scene,SLOT(drawlingModeOn()));
  //   this->showFullScreen();
 }
 

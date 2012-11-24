@@ -5,8 +5,11 @@ TrainningScene::TrainningScene(QWidget *parent) :
 {
     drawling = false;
     drawlingMode = false;
+    editingMode = false;
     curCruve = NULL;
-    this->setMouseTracking(true);
+    curObj = NULL;
+    curPoint = NULL;
+    connect(this,SIGNAL(newRouteAdded(MapObj*)),this, SLOT(procesingNewRoute(MapObj*)));
 }
 
 void TrainningScene::paintEvent(QPaintEvent *event)
@@ -15,6 +18,7 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     QPointF from;
     QPointF to;
     pen = new QPen();
+    brush = new QBrush(Qt::SolidPattern);
     pen->setWidth(2);
     pen->setColor(Qt::black);
     painter.setPen(*pen);
@@ -32,6 +36,17 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
+    QList<MapObj>::iterator it = objects.begin();
+    for( it ; it != objects.end() ; it++ )
+    {
+        pen->setColor(Qt::green);
+        if( &(*it) == curObj)
+        {
+            pen->setColor(Qt::blue);
+        }
+        painter.setPen(*pen);
+        drawBesierSpline( &painter, (*it).getPoints());
+    }
     if( drawling )
     {
         if( curCruve != NULL )
@@ -48,16 +63,16 @@ void TrainningScene::paintEvent(QPaintEvent *event)
             }
         }
     }
-    QList<MapObj>::iterator it = objects.begin();
-    for( it ; it != objects.end() ; it++ )
+    if( editingMode )
     {
-        pen->setColor(Qt::green);
-        if( &(*it) == curObj)
+        if( curPoint != NULL )
         {
-            pen->setColor(Qt::blue);
+            pen->setColor(Qt::black);
+            brush->setColor(Qt::red);
+            painter.setBrush(*brush);
+            painter.setPen(*pen);
+            painter.drawEllipse(curPoint->getPoints()->first(),5,5);
         }
-        painter.setPen(*pen);
-        drawBesierSpline( &painter, (*it).getPoints());
     }
 }
 
@@ -84,6 +99,11 @@ void TrainningScene::mouseMoveEvent(QMouseEvent *event)
             update();
         }
     }
+    if( editingMode )
+    {
+        ifOnCurRoute(event->posF());
+        update();
+    }
 }
 
 void TrainningScene::mouseReleaseEvent(QMouseEvent *event)
@@ -92,14 +112,18 @@ void TrainningScene::mouseReleaseEvent(QMouseEvent *event)
     {
         if(event->button() == Qt::LeftButton)
         {
+            drawlingMode = false;
             drawling = false;
             this->setCursor(Qt::ArrowCursor);
             if(!curCruve->isEmpty())
             {
-                MapObj cruve( *curCruve );
-                objects.append(cruve);
+                MapObj route( *curCruve );
+                route.setType(cruve);
+                objects.append(route);
+                emit newRouteAdded( &objects.last());
                 update();
             }
+
         }
     }
 }
@@ -161,9 +185,9 @@ void TrainningScene::drawBesierSpline( QPainter* painter,QList<QPointF> *points 
                 ypos1 = pow(1.0-t,3)*(*it).y()+3*t*pow(1.0-t,2)*(*(it+1)).y()+3*pow(t,2)*(1.0-t)*(*(it+2)).y()+pow(t,3)*(*(it+3)).y();
                 xpos2 = pow(1.0-t-0.1,3)*(*it).x()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).x()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).x()+pow(t+0.1,3)*(*(it+3)).x();
                 ypos2 = pow(1.0-t-0.1,3)*(*it).y()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).y()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).y()+pow(t+0.1,3)*(*(it+3)).y();
-                painter->drawLine(QPointF( xpos1, ypos1 ), QPointF( xpos2, ypos2 ) );
+                QLineF line(QPointF(xpos1, ypos1),QPointF(xpos2, ypos2));
+                painter->drawLine( line );
             }
-
         }
         else
         {
@@ -172,7 +196,76 @@ void TrainningScene::drawBesierSpline( QPainter* painter,QList<QPointF> *points 
     }
 }
 
-MapObj* TrainningScene::ifOnCruve(QPointF p)
-{
+ qreal TrainningScene::absSC( qreal val )
+ {
+     return ( val >= 0 ) ? val :-val;
+ }
 
+void TrainningScene::drawlingModeOn()
+{
+    drawlingMode = true;
+}
+
+void TrainningScene::procesingNewRoute( MapObj *obj )
+{
+    curObj = obj;
+    editingMode = true;
+    this->setMouseTracking(true);
+}
+
+bool TrainningScene::ifOnCurRoute(QPointF p)
+{
+    curPoint = NULL;
+    QList<QPointF> *points = curObj->getPoints();
+    QList<QPointF>::iterator it = points->begin();
+    for( it ; it != points->end() ; it+=3 )
+    {
+        if( it+1 != points->end() && it+2 != points->end() && it+3 != points->end() )
+        {
+            qreal xpos1;
+            qreal ypos1;
+            qreal xpos2;
+            qreal ypos2;            
+            for( double t = 0.0; t < 1-0.1 ; t+=0.1 )
+            {
+                xpos1 = pow(1.0-t,3)*(*it).x()+3*t*pow(1.0-t,2)*(*(it+1)).x()+3*pow(t,2)*(1.0-t)*(*(it+2)).x()+pow(t,3)*(*(it+3)).x();
+                ypos1 = pow(1.0-t,3)*(*it).y()+3*t*pow(1.0-t,2)*(*(it+1)).y()+3*pow(t,2)*(1.0-t)*(*(it+2)).y()+pow(t,3)*(*(it+3)).y();
+                xpos2 = pow(1.0-t-0.1,3)*(*it).x()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).x()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).x()+pow(t+0.1,3)*(*(it+3)).x();
+                ypos2 = pow(1.0-t-0.1,3)*(*it).y()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).y()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).y()+pow(t+0.1,3)*(*(it+3)).y();
+                QLineF line(QPointF(xpos1, ypos1),QPointF(xpos2, ypos2));
+                qreal delta = 1.0/line.length();
+                for( qreal k = 0 ; k <= 1.0 ; k+=delta )
+                {
+                    QPointF centr = line.pointAt(k);
+                    QRectF rect(centr.x()-2,centr.y()-2,4,4);
+                    if( rect.contains(p))
+                    {
+                        QList<QPointF> pt;
+                        pt.append(p);
+                        curPoint = new MapObj(pt);
+                        curPoint->setType(point);
+                        return true;
+                    }
+                }
+                if( delta > 1 )
+                {
+                    QPointF centr = line.pointAt(1);
+                    QRectF rect(centr.x()-2,centr.y()-2,4,4);
+                    if( rect.contains(p))
+                    {
+                        QList<QPointF> pt;
+                        pt.append(p);
+                        curPoint = new MapObj(pt);
+                        curPoint->setType(point);
+                        return true;
+                    }
+                }
+
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
 }

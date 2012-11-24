@@ -32,3 +32,8 @@ RoutesMenu::RoutesMenu(QWidget *parent) :
     this->setLayout( VLayout1 );
     this->adjustSize();
 }
+
+QPushButton* RoutesMenu::getNewRouteButton()
+{
+    return newRouteButton;
+}

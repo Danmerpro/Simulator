@@ -16,3 +16,13 @@ QColor MapObj::getColor()
     return color;
 }
 
+void MapObj::setType( MAP_OBJ_TYPE _type )
+{
+    type = _type;
+}
+
+MAP_OBJ_TYPE MapObj::grtType()
+{
+    return type;
+}
+

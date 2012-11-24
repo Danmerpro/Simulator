@@ -8,6 +8,8 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QFormLayout>
+#include <QLineEdit>
 
 class EditRoutesMenu : public QWidget
 {
@@ -20,10 +22,12 @@ private:
     QComboBox* accessoryCombo;
     QSpinBox* speedBox;
     QSpinBox* altBox;
+    QLineEdit* curPoint;
 public:
     explicit EditRoutesMenu(QWidget *parent = 0);
     
 signals:
+    void readyButtonPushed();
     
 public slots:
     

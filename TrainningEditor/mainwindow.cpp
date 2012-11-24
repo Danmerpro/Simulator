@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout* mainLayout = new QHBoxLayout();
     QHBoxLayout* menuLayout = new QHBoxLayout();
     QVBoxLayout* sceneLayout = new QVBoxLayout();
-    scene = new TrainningScene( this );
+    objects = new QList<MapObj*>();
+    scene = new TrainningScene( objects, this );
     rtMenu = new RoutesMenu(this);
     editMenu = new EditRoutesMenu(this);
     sceneLayout->addWidget(scene);
@@ -26,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget->setLayout( mainLayout );
     this->setCentralWidget( centralWidget );
     connect(rtMenu->getNewRouteButton(),SIGNAL(clicked()),scene,SLOT(drawlingModeOn()));
+    connect(scene, SIGNAL(routeEditing(MapObj*)), this, SLOT(routeEditing(MapObj*)));
+    connect(editMenu, SIGNAL(readyButtonPushed()), this, SLOT(finishEdit()));
+    connect(editMenu, SIGNAL(readyButtonPushed()), scene, SLOT(finishEdit()));
     editMenu->hide();
  //   this->showFullScreen();
 }
@@ -62,6 +66,18 @@ void MainWindow::createToolBars()
 void MainWindow::createStatusBar()
 {
     statusBar();
+}
+
+void MainWindow::routeEditing( MapObj* _route )
+{
+    editMenu->show();
+    rtMenu->hide();
+}
+
+void MainWindow::finishEdit()
+{
+    editMenu->hide();
+    rtMenu->show();
 }
 
 

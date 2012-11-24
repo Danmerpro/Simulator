@@ -1,8 +1,9 @@
 #include "trainningscene.h"
 
-TrainningScene::TrainningScene(QWidget *parent) :
+TrainningScene::TrainningScene( QList<MapObj*> *_objects, QWidget *parent) :
     QWidget(parent)
 {
+    objects = _objects;
     darwlingRouteMode = false;
     editingMode = false;
     curRoute = NULL;
@@ -34,8 +35,8 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
-    QList<MapObj*>::iterator it = objects.begin();
-    for( it ; it != objects.end() ; it++ )
+    QList<MapObj*>::iterator it = objects->begin();
+    for( it ; it != objects->end() ; it++ )
     {
         pen->setColor(Qt::green);
         pen->setWidth(2);
@@ -214,8 +215,15 @@ void TrainningScene::procesingNewRoute()
     darwlingRouteMode = false;
     this->setCursor(Qt::ArrowCursor);
     curObj = new MapObj( *curRoute );
-    objects.append( curObj );
+    objects->append( curObj );
     this->setMouseTracking( false );
+    editingMode = true;
+    emit routeEditing( curObj );
+}
+
+void TrainningScene::finishEdit()
+{
+    editingMode = false;
 }
 
 

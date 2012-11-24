@@ -26,6 +26,11 @@ private:
     TrainningScene* scene;
     RoutesMenu* rtMenu;
     EditRoutesMenu* editMenu;
+    QList<MapObj*> *objects;
+private slots:
+    void routeEditing( MapObj* _route );
+    void finishEdit();
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();

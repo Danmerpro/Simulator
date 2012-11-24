@@ -14,34 +14,30 @@ class TrainningScene : public QWidget
 {
     Q_OBJECT
 private:
-    QList<MapObj> objects;
-    bool drawling;
-    QList<QPointF>* curCruve;
+    QList<MapObj*> objects;
+    QList<QPointF>* curRoute;
+    MapObj* curObj;
+    QPointF curMousePos;
     QPen* pen;
     QBrush* brush;
-    MapObj* curObj;
-    MapObj* curPoint;
-    bool drawlingMode;
+    bool darwlingRouteMode;
     bool editingMode;
 
 public:
     explicit TrainningScene(QWidget *parent = 0);
-    bool ifOnCurRoute(QPointF p);
-    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );
-    qreal absSC( qreal val );
+//    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );
     
 signals:
-    void newRouteAdded(MapObj *obj);
+    void newRouteAdded();
     
 private slots:
     void drawlingModeOn();
-    void procesingNewRoute( MapObj *obj );
+    void procesingNewRoute();
 
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
     
 };
 

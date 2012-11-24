@@ -11,6 +11,7 @@
 #include <QTextCodec>
 #include "routesmenu.h"
 #include "trainningscene.h"
+#include "editroutesmenu.h"
 
 class MainWindow : public QMainWindow
 {
@@ -24,6 +25,7 @@ private:
     void createStatusBar();
     TrainningScene* scene;
     RoutesMenu* rtMenu;
+    EditRoutesMenu* editMenu;
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();

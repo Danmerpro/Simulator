@@ -3,13 +3,11 @@
 TrainningScene::TrainningScene(QWidget *parent) :
     QWidget(parent)
 {
-    drawling = false;
-    drawlingMode = false;
+    darwlingRouteMode = false;
     editingMode = false;
-    curCruve = NULL;
+    curRoute = NULL;
     curObj = NULL;
-    curPoint = NULL;
-    connect(this,SIGNAL(newRouteAdded(MapObj*)),this, SLOT(procesingNewRoute(MapObj*)));
+    connect(this,SIGNAL(newRouteAdded()),this, SLOT(procesingNewRoute()));
 }
 
 void TrainningScene::paintEvent(QPaintEvent *event)
@@ -36,98 +34,103 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
-    QList<MapObj>::iterator it = objects.begin();
+    QList<MapObj*>::iterator it = objects.begin();
     for( it ; it != objects.end() ; it++ )
     {
         pen->setColor(Qt::green);
-        if( &(*it) == curObj)
+        pen->setWidth(2);
+        brush->setColor(Qt::green);
+        if( (*it) == curObj )
         {
             pen->setColor(Qt::blue);
+            brush->setColor(Qt::blue);
         }
         painter.setPen(*pen);
-        drawBesierSpline( &painter, (*it).getPoints());
-    }
-    if( drawling )
-    {
-        if( curCruve != NULL )
+        painter.setBrush(*brush);
+        QList<QPointF>::iterator itC = (*it)->getPoints()->begin();
+        for( itC ; itC != (*it)->getPoints()->end() ; itC++ )
         {
-            QList<QPointF>::iterator itC = curCruve->begin();
-            for( itC ; itC != curCruve->end() ; itC++ )
+            if( itC+1 != (*it)->getPoints()->end())
             {
-                if( itC+1 != curCruve->end())
+                from = (*itC);
+                to = (*(itC+1));
+            }
+            painter.drawLine(from,to);
+        }
+        pen->setColor(Qt::black);
+        pen->setWidth(1);
+        painter.setPen(*pen);
+        int c = 0;
+        for( itC = (*it)->getPoints()->begin(); itC != (*it)->getPoints()->end() ; itC++, c++ )
+        {
+            QPointF pLable((*itC).x()+6,(*itC).y()+6);
+            painter.drawEllipse((*itC),4,4);
+            painter.drawText(pLable, QString().setNum(c+1));
+        }
+    }
+    if( darwlingRouteMode )
+    {
+        if( curRoute != NULL )
+        {
+            pen->setColor(Qt::blue);
+            pen->setWidth(2);
+            brush->setColor(Qt::blue);
+            painter.setBrush(*brush);
+            painter.setPen(*pen);
+            QList<QPointF>::iterator itC = curRoute->begin();
+            for( itC ; itC != curRoute->end() ; itC++ )
+            {
+                if( itC+1 != curRoute->end())
                 {
                     from = (*itC);
                     to = (*(itC+1));
                 }
+                else
+                {
+                    from = (*itC);
+                    to = curMousePos;
+                }
                 painter.drawLine(from,to);
             }
-        }
-    }
-    if( editingMode )
-    {
-        if( curPoint != NULL )
-        {
             pen->setColor(Qt::black);
-            brush->setColor(Qt::red);
-            painter.setBrush(*brush);
+            pen->setWidth(1);
             painter.setPen(*pen);
-            painter.drawEllipse(curPoint->getPoints()->first(),5,5);
+            int c = 0;
+            for( itC = curRoute->begin(); itC != curRoute->end() ; itC++, c++ )
+            {
+                QPointF pLable((*itC).x()+6,(*itC).y()+6);
+                painter.drawEllipse((*itC),4,4);
+                painter.drawText(pLable,QString().setNum( c+1 ));
+            }
         }
     }
 }
 
 void TrainningScene::mousePressEvent(QMouseEvent *event)
 {
-    if( drawlingMode )
+    if( darwlingRouteMode )
     {
         if(event->button() == Qt::LeftButton)
         {
-            drawling = true;
-            this->setCursor(Qt::CrossCursor);
-            curCruve = new QList<QPointF>();
+            curRoute->append( event->posF() );
         }
+        if(event->button() == Qt::RightButton)
+        {
+            emit newRouteAdded();
+        }
+        update();
     }
 }
 
 void TrainningScene::mouseMoveEvent(QMouseEvent *event)
 {
-    if( drawlingMode )
+    if( darwlingRouteMode )
     {
-        if( drawling )
-        {
-            curCruve->append(event->posF());
-            update();
-        }
-    }
-    if( editingMode )
-    {
-        ifOnCurRoute(event->posF());
+        curMousePos = event->posF();
         update();
     }
 }
-
-void TrainningScene::mouseReleaseEvent(QMouseEvent *event)
-{
-    if( drawlingMode )
-    {
-        if(event->button() == Qt::LeftButton)
-        {
-            drawlingMode = false;
-            drawling = false;
-            this->setCursor(Qt::ArrowCursor);
-            if(!curCruve->isEmpty())
-            {
-                MapObj route( *curCruve );
-                route.setType(cruve);
-                objects.append(route);
-                emit newRouteAdded( &objects.last());
-                update();
-            }
-
-        }
-    }
-}
-
+/*
 void TrainningScene::drawBesierSpline( QPainter* painter,QList<QPointF> *points )
 {
     int pointsAmount = points->size();
@@ -195,77 +198,24 @@ void TrainningScene::drawBesierSpline( QPainter* painter,QList<QPointF> *points 
         }
     }
 }
-
- qreal TrainningScene::absSC( qreal val )
- {
-     return ( val >= 0 ) ? val :-val;
- }
+*/
 
 void TrainningScene::drawlingModeOn()
 {
-    drawlingMode = true;
+    darwlingRouteMode = true;
+    this->setCursor(Qt::CrossCursor);
+    curRoute = new QList<QPointF>();
+    curObj = NULL;
+    this->setMouseTracking( true );
 }
 
-void TrainningScene::procesingNewRoute( MapObj *obj )
+void TrainningScene::procesingNewRoute()
 {
-    curObj = obj;
-    editingMode = true;
-    this->setMouseTracking(true);
+    darwlingRouteMode = false;
+    this->setCursor(Qt::ArrowCursor);
+    curObj = new MapObj( *curRoute );
+    objects.append( curObj );
+    this->setMouseTracking( false );
 }
 
-bool TrainningScene::ifOnCurRoute(QPointF p)
-{
-    curPoint = NULL;
-    QList<QPointF> *points = curObj->getPoints();
-    QList<QPointF>::iterator it = points->begin();
-    for( it ; it != points->end() ; it+=3 )
-    {
-        if( it+1 != points->end() && it+2 != points->end() && it+3 != points->end() )
-        {
-            qreal xpos1;
-            qreal ypos1;
-            qreal xpos2;
-            qreal ypos2;            
-            for( double t = 0.0; t < 1-0.1 ; t+=0.1 )
-            {
-                xpos1 = pow(1.0-t,3)*(*it).x()+3*t*pow(1.0-t,2)*(*(it+1)).x()+3*pow(t,2)*(1.0-t)*(*(it+2)).x()+pow(t,3)*(*(it+3)).x();
-                ypos1 = pow(1.0-t,3)*(*it).y()+3*t*pow(1.0-t,2)*(*(it+1)).y()+3*pow(t,2)*(1.0-t)*(*(it+2)).y()+pow(t,3)*(*(it+3)).y();
-                xpos2 = pow(1.0-t-0.1,3)*(*it).x()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).x()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).x()+pow(t+0.1,3)*(*(it+3)).x();
-                ypos2 = pow(1.0-t-0.1,3)*(*it).y()+3*(t+0.1)*pow(1.0-t-0.1,2)*(*(it+1)).y()+3*pow(t+0.1,2)*(1.0-t-0.1)*(*(it+2)).y()+pow(t+0.1,3)*(*(it+3)).y();
-                QLineF line(QPointF(xpos1, ypos1),QPointF(xpos2, ypos2));
-                qreal delta = 1.0/line.length();
-                for( qreal k = 0 ; k <= 1.0 ; k+=delta )
-                {
-                    QPointF centr = line.pointAt(k);
-                    QRectF rect(centr.x()-2,centr.y()-2,4,4);
-                    if( rect.contains(p))
-                    {
-                        QList<QPointF> pt;
-                        pt.append(p);
-                        curPoint = new MapObj(pt);
-                        curPoint->setType(point);
-                        return true;
-                    }
-                }
-                if( delta > 1 )
-                {
-                    QPointF centr = line.pointAt(1);
-                    QRectF rect(centr.x()-2,centr.y()-2,4,4);
-                    if( rect.contains(p))
-                    {
-                        QList<QPointF> pt;
-                        pt.append(p);
-                        curPoint = new MapObj(pt);
-                        curPoint->setType(point);
-                        return true;
-                    }
-                }
 
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-}

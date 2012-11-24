@@ -3,7 +3,8 @@ HEADERS += \
     trainningscene.h \
     mapobj.h \
     routesmenu.h \
-    routestable.h
+    routestable.h \
+    editroutesmenu.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -11,7 +12,8 @@ SOURCES += \
     trainningscene.cpp \
     mapobj.cpp \
     routesmenu.cpp \
-    routestable.cpp
+    routestable.cpp \
+    editroutesmenu.cpp
 
 RESOURCES += \
     Resources/MapResources.qrc

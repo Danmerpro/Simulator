@@ -5,7 +5,7 @@
 #include <QPointF>
 #include <QColor>
 
-enum MAP_OBJ_TYPE { cruve , point };
+enum MAP_OBJ_TYPE { route };
 
 class MapObj
 {

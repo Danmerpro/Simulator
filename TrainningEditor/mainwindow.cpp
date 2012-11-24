@@ -12,19 +12,21 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowIcon(QIcon(":/Icon/RLSIcon.png"));
     QWidget *centralWidget = new QWidget(this);
     QHBoxLayout* mainLayout = new QHBoxLayout();
-    QVBoxLayout* menuLayout = new QVBoxLayout();
+    QHBoxLayout* menuLayout = new QHBoxLayout();
     QVBoxLayout* sceneLayout = new QVBoxLayout();
     scene = new TrainningScene( this );
-    rtMenu = new RoutesMenu (this);
+    rtMenu = new RoutesMenu(this);
+    editMenu = new EditRoutesMenu(this);
     sceneLayout->addWidget(scene);
     menuLayout->addWidget(rtMenu);
+    menuLayout->addWidget(editMenu);
     mainLayout->addLayout(sceneLayout);
     mainLayout->addLayout(menuLayout);
     mainLayout->setStretch(0,4);
-    mainLayout->setStretch(0,1);
     centralWidget->setLayout( mainLayout );
     this->setCentralWidget( centralWidget );
     connect(rtMenu->getNewRouteButton(),SIGNAL(clicked()),scene,SLOT(drawlingModeOn()));
+    editMenu->hide();
  //   this->showFullScreen();
 }
 

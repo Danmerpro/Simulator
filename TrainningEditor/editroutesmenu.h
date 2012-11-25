@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include <QFormLayout>
 #include <QLineEdit>
+#include "mapobj.h"
 
 class EditRoutesMenu : public QWidget
 {
@@ -23,13 +24,19 @@ private:
     QSpinBox* speedBox;
     QSpinBox* altBox;
     QLineEdit* curPoint;
+    MapObj* route;
+    QList<RoutePoint>::iterator it;
+    int pointNum;
 public:
     explicit EditRoutesMenu(QWidget *parent = 0);
+    void setEditingRoute( MapObj* _route );
     
 signals:
     void readyButtonPushed();
     
 public slots:
+    void pointSpeedChanged( );
+    void pointAltChanged( );
     
 };
 

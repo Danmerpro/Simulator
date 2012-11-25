@@ -6,7 +6,6 @@ TrainningScene::TrainningScene( QList<MapObj*> *_objects, QWidget *parent) :
     objects = _objects;
     darwlingRouteMode = false;
     editingMode = false;
-    curRoute = NULL;
     curObj = NULL;
     connect(this,SIGNAL(newRouteAdded()),this, SLOT(procesingNewRoute()));
 }
@@ -38,58 +37,20 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     QList<MapObj*>::iterator it = objects->begin();
     for( it ; it != objects->end() ; it++ )
     {
-        pen->setColor(Qt::green);
-        pen->setWidth(2);
-        brush->setColor(Qt::green);
-        if( (*it) == curObj )
+        if( (*it) != curObj )
         {
-            pen->setColor(Qt::blue);
-            brush->setColor(Qt::blue);
-        }
-        painter.setPen(*pen);
-        painter.setBrush(*brush);
-        QList<QPointF>::iterator itC = (*it)->getPoints()->begin();
-        for( itC ; itC != (*it)->getPoints()->end() ; itC++ )
-        {
-            if( itC+1 != (*it)->getPoints()->end())
-            {
-                from = (*itC);
-                to = (*(itC+1));
-            }
-            painter.drawLine(from,to);
-        }
-        pen->setColor(Qt::black);
-        pen->setWidth(1);
-        painter.setPen(*pen);
-        int c = 0;
-        for( itC = (*it)->getPoints()->begin(); itC != (*it)->getPoints()->end() ; itC++, c++ )
-        {
-            QPointF pLable((*itC).x()+6,(*itC).y()+6);
-            painter.drawEllipse((*itC),4,4);
-            painter.drawText(pLable, QString().setNum(c+1));
-        }
-    }
-    if( darwlingRouteMode )
-    {
-        if( curRoute != NULL )
-        {
-            pen->setColor(Qt::blue);
+            pen->setColor(Qt::green);
             pen->setWidth(2);
-            brush->setColor(Qt::blue);
-            painter.setBrush(*brush);
+            brush->setColor(Qt::green);
             painter.setPen(*pen);
-            QList<QPointF>::iterator itC = curRoute->begin();
-            for( itC ; itC != curRoute->end() ; itC++ )
+            painter.setBrush(*brush);
+            QList<RoutePoint>::iterator itC = (*it)->getPoints()->begin();
+            for( itC ; itC != (*it)->getPoints()->end() ; itC++ )
             {
-                if( itC+1 != curRoute->end())
+                if( itC+1 != (*it)->getPoints()->end())
                 {
                     from = (*itC);
                     to = (*(itC+1));
-                }
-                else
-                {
-                    from = (*itC);
-                    to = curMousePos;
                 }
                 painter.drawLine(from,to);
             }
@@ -97,12 +58,48 @@ void TrainningScene::paintEvent(QPaintEvent *event)
             pen->setWidth(1);
             painter.setPen(*pen);
             int c = 0;
-            for( itC = curRoute->begin(); itC != curRoute->end() ; itC++, c++ )
+            for( itC = (*it)->getPoints()->begin(); itC != (*it)->getPoints()->end() ; itC++, c++ )
             {
                 QPointF pLable((*itC).x()+6,(*itC).y()+6);
                 painter.drawEllipse((*itC),4,4);
-                painter.drawText(pLable,QString().setNum( c+1 ));
+                painter.drawText(pLable, QString().setNum(c+1));
             }
+        }
+    }
+    if( curObj != NULL )
+    {
+        pen->setColor(Qt::blue);
+        pen->setWidth(2);
+        brush->setColor(Qt::blue);
+        painter.setBrush(*brush);
+        painter.setPen(*pen);
+        QList<RoutePoint>::iterator itC = curObj->getPoints()->begin();
+        for( itC ; itC != curObj->getPoints()->end() ; itC++ )
+        {
+            if( itC+1 != curObj->getPoints()->end())
+            {
+                from = (*itC);
+                to = (*(itC+1));
+            }
+            else
+            {
+                if( darwlingRouteMode )
+                {
+                    from = (*itC);
+                    to = curMousePos;
+                }
+            }
+            painter.drawLine(from,to);
+        }
+        pen->setColor(Qt::black);
+        pen->setWidth(1);
+        painter.setPen(*pen);
+        int c = 0;
+        for( itC = curObj->getPoints()->begin(); itC != curObj->getPoints()->end() ; itC++, c++ )
+        {
+            QPointF pLable((*itC).x()+6,(*itC).y()+6);
+            painter.drawEllipse((*itC),4,4);
+            painter.drawText(pLable,QString().setNum( c+1 ));
         }
     }
 }
@@ -113,7 +110,7 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
     {
         if(event->button() == Qt::LeftButton)
         {
-            curRoute->append( event->posF() );
+            curObj->appendPoint( RoutePoint(event->posF()) );
         }
         if(event->button() == Qt::RightButton)
         {
@@ -205,8 +202,8 @@ void TrainningScene::drawlingModeOn()
 {
     darwlingRouteMode = true;
     this->setCursor(Qt::CrossCursor);
-    curRoute = new QList<QPointF>();
-    curObj = NULL;
+    curObj = new MapObj();
+    objects->append( curObj );
     this->setMouseTracking( true );
 }
 
@@ -214,8 +211,6 @@ void TrainningScene::procesingNewRoute()
 {
     darwlingRouteMode = false;
     this->setCursor(Qt::ArrowCursor);
-    curObj = new MapObj( *curRoute );
-    objects->append( curObj );
     this->setMouseTracking( false );
     editingMode = true;
     emit routeEditing( curObj );

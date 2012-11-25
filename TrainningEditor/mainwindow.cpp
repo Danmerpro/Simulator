@@ -72,6 +72,7 @@ void MainWindow::routeEditing( MapObj* _route )
 {
     editMenu->show();
     rtMenu->hide();
+    editMenu->setEditingRoute( _route );
 }
 
 void MainWindow::finishEdit()

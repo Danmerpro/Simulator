@@ -2,25 +2,31 @@
 #define MAPOBJ_H
 
 #include <QList>
-#include <QPointF>
 #include <QColor>
+#include "routepoint.h"
 
 enum MAP_OBJ_TYPE { route };
+enum ACCESSORY_TYPE { ours, alien };
 
 class MapObj
 {
 
 private:
-    QList<QPointF> points;
+    QList<RoutePoint> points;
     MAP_OBJ_TYPE type;
-    QColor color;
+    QColor routeColor;
+    ACCESSORY_TYPE asseccory;
 public:
-    MapObj( QList<QPointF> _points );
-    QList<QPointF>* getPoints(){ return &points; };
-    void setColor( QColor _color );
-    QColor getColor();
+    MapObj();
+    MapObj( QList<RoutePoint> _points );
+    void appendPoint( RoutePoint p );
+    QList<RoutePoint>* getPoints(){ return &points; };
+    void setRouteColor( QColor _color );
+    QColor getRouteColor();
     void setType( MAP_OBJ_TYPE _type );
     MAP_OBJ_TYPE grtType();
+    void setAsseccory( ACCESSORY_TYPE _asseccory );
+    ACCESSORY_TYPE getAsseccory();
 };
 
 #endif // CRUVE_H

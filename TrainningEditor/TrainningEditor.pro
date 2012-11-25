@@ -4,7 +4,8 @@ HEADERS += \
     mapobj.h \
     routesmenu.h \
     routestable.h \
-    editroutesmenu.h
+    editroutesmenu.h \
+    routepoint.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -13,7 +14,8 @@ SOURCES += \
     mapobj.cpp \
     routesmenu.cpp \
     routestable.cpp \
-    editroutesmenu.cpp
+    editroutesmenu.cpp \
+    routepoint.cpp
 
 RESOURCES += \
     Resources/MapResources.qrc

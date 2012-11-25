@@ -8,6 +8,7 @@
 #include <Qpen>
 #include <math.h>
 #include "mapobj.h"
+#include "routepoint.h"
 
 
 class TrainningScene : public QWidget
@@ -15,7 +16,6 @@ class TrainningScene : public QWidget
     Q_OBJECT
 private:
     QList<MapObj*> *objects;
-    QList<QPointF>* curRoute;
     MapObj* curObj;
     QPointF curMousePos;
     QPen* pen;

@@ -39,9 +39,17 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     {
         if( (*it) != curObj )
         {
-            pen->setColor(Qt::green);
             pen->setWidth(2);
-            brush->setColor(Qt::green);
+            if( curObj->getAsseccory() == ours )
+            {
+                pen->setColor(Qt::blue);
+                brush->setColor(Qt::blue);
+            }
+            if( curObj->getAsseccory() == alien )
+            {
+                pen->setColor(Qt::red);
+                brush->setColor(Qt::red);
+            }
             painter.setPen(*pen);
             painter.setBrush(*brush);
             QList<RoutePoint>::iterator itC = (*it)->getPoints()->begin();
@@ -68,10 +76,8 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     }
     if( curObj != NULL )
     {
-        pen->setColor(Qt::blue);
+        pen->setColor(Qt::green);
         pen->setWidth(2);
-        brush->setColor(Qt::blue);
-        painter.setBrush(*brush);
         painter.setPen(*pen);
         QList<RoutePoint>::iterator itC = curObj->getPoints()->begin();
         for( itC ; itC != curObj->getPoints()->end() ; itC++ )
@@ -97,6 +103,19 @@ void TrainningScene::paintEvent(QPaintEvent *event)
         int c = 0;
         for( itC = curObj->getPoints()->begin(); itC != curObj->getPoints()->end() ; itC++, c++ )
         {
+            if( curObj->getActivePoint() == &(*itC) )
+            {
+                brush->setColor(Qt::red);
+            }
+            else
+            {
+                brush->setColor(Qt::green);
+            }
+            if( overCursor == &(*itC))
+            {
+                brush->setColor(Qt::yellow);
+            }
+            painter.setBrush(*brush);
             QPointF pLable((*itC).x()+6,(*itC).y()+6);
             painter.drawEllipse((*itC),4,4);
             painter.drawText(pLable,QString().setNum( c+1 ));
@@ -114,9 +133,36 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
         }
         if(event->button() == Qt::RightButton)
         {
-            emit newRouteAdded();
+            if( curObj != NULL )
+            {
+                if( curObj->getPoints()->size() <= 1 )
+                {
+                    QMessageBox::warning(this, tr("Ошибка"),tr("Маршрут должен содержать хотя бы 2 точки!"));
+                }
+                else
+                {
+                    emit newRouteAdded();
+                }
+            }
         }
         update();
+    }
+}
+
+void TrainningScene::mouseDoubleClickEvent ( QMouseEvent * event )
+{
+    if( editingMode )
+    {
+        if(event->button() == Qt::LeftButton)
+        {
+            RoutePoint* curP;
+            if( (curP = isOnPoint(event->posF())) != NULL )
+            {
+                curObj->setActivePoint(curP);
+                emit activePointChanged();
+                update();
+            }
+        }
     }
 }
 
@@ -125,6 +171,13 @@ void TrainningScene::mouseMoveEvent(QMouseEvent *event)
     if( darwlingRouteMode )
     {
         curMousePos = event->posF();
+        update();
+    }
+    if( editingMode )
+    {
+        RoutePoint* curP;
+        curP = isOnPoint(event->posF());
+        overCursor = curP;
         update();
     }
 }
@@ -211,14 +264,32 @@ void TrainningScene::procesingNewRoute()
 {
     darwlingRouteMode = false;
     this->setCursor(Qt::ArrowCursor);
-    this->setMouseTracking( false );
     editingMode = true;
+    this->setMouseTracking( true );
     emit routeEditing( curObj );
 }
 
 void TrainningScene::finishEdit()
 {
     editingMode = false;
+    curObj->setActivePoint(NULL);
+    update();
+}
+
+void TrainningScene::changeAvtivePoint()
+{
+    update();
+}
+
+RoutePoint* TrainningScene::isOnPoint(QPointF p)
+{
+    QList<RoutePoint>::iterator itC;
+    for( itC = curObj->getPoints()->begin(); itC != curObj->getPoints()->end() ; itC++ )
+    {
+        if(QRectF((*itC).x()-2, (*itC).y()-2, 4, 4).contains(p) )
+            return &(*itC);
+    }
+    return NULL;
 }
 
 

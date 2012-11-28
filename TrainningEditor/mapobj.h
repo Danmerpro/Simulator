@@ -16,6 +16,7 @@ private:
     MAP_OBJ_TYPE type;
     QColor routeColor;
     ACCESSORY_TYPE asseccory;
+    RoutePoint* activePoint;
 public:
     MapObj();
     MapObj( QList<RoutePoint> _points );
@@ -27,6 +28,8 @@ public:
     MAP_OBJ_TYPE grtType();
     void setAsseccory( ACCESSORY_TYPE _asseccory );
     ACCESSORY_TYPE getAsseccory();
+    void setActivePoint( RoutePoint* p );
+    RoutePoint* getActivePoint();
 };
 
 #endif // CRUVE_H

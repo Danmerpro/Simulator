@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QMessageBox>
 #include "mapobj.h"
 
 class EditRoutesMenu : public QWidget
@@ -33,10 +34,16 @@ public:
     
 signals:
     void readyButtonPushed();
+    void activePointChanged();
     
 public slots:
     void pointSpeedChanged( );
     void pointAltChanged( );
+    void toNextPoint();
+    void toPrevPoint();
+    void toNumPoint( QString _num );
+    void changeActivePoint();
+    void asseccoryChanged(int index);
     
 };
 

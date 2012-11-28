@@ -5,6 +5,7 @@ MapObj::MapObj( )
 {
     routeColor = Qt::green;
     asseccory = ours;
+    activePoint = NULL;
 }
 
 MapObj::MapObj( QList<RoutePoint> _points)
@@ -12,6 +13,7 @@ MapObj::MapObj( QList<RoutePoint> _points)
     points = _points;
     routeColor = Qt::green;
     asseccory = ours;
+    activePoint = NULL;
 }
 
 void MapObj::setRouteColor( QColor _color )
@@ -47,6 +49,16 @@ void MapObj::setAsseccory( ACCESSORY_TYPE _asseccory )
 ACCESSORY_TYPE MapObj::getAsseccory()
 {
     return asseccory;
+}
+
+void MapObj::setActivePoint( RoutePoint* p )
+{
+    activePoint = p;
+}
+
+RoutePoint* MapObj::getActivePoint()
+{
+    return activePoint;
 }
 
 

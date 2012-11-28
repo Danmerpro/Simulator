@@ -30,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene, SIGNAL(routeEditing(MapObj*)), this, SLOT(routeEditing(MapObj*)));
     connect(editMenu, SIGNAL(readyButtonPushed()), this, SLOT(finishEdit()));
     connect(editMenu, SIGNAL(readyButtonPushed()), scene, SLOT(finishEdit()));
+    connect(editMenu, SIGNAL(activePointChanged()),scene, SLOT(changeAvtivePoint()));
+    connect(scene, SIGNAL(activePointChanged()),editMenu, SLOT(changeActivePoint()));
     editMenu->hide();
  //   this->showFullScreen();
 }

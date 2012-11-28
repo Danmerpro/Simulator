@@ -6,6 +6,7 @@
 #include <QBrush>
 #include <QMouseEvent>
 #include <Qpen>
+#include <QMessageBox>
 #include <math.h>
 #include "mapobj.h"
 #include "routepoint.h"
@@ -20,26 +21,31 @@ private:
     QPointF curMousePos;
     QPen* pen;
     QBrush* brush;
+    RoutePoint* overCursor;
     bool darwlingRouteMode;
     bool editingMode;
 
 public:
     explicit TrainningScene(QList<MapObj*> *_objects, QWidget *parent = 0);
 //    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );
+    RoutePoint* isOnPoint(QPointF p);
     
 signals:
     void newRouteAdded();
     void routeEditing( MapObj* _route);
+    void activePointChanged();
     
-private slots:
+public slots:
     void drawlingModeOn();
     void procesingNewRoute();
     void finishEdit();
+    void changeAvtivePoint();
 
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent ( QMouseEvent * event );
     
 };
 

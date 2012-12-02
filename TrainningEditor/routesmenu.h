@@ -6,7 +6,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
-#include "routestable.h"
+#include "routeslist.h"
+#include "mapobj.h"
 
 class RoutesMenu : public QWidget
 {
@@ -17,14 +18,18 @@ private:
     QPushButton* deleteRouteButton;
     QPushButton* editRouteButton;
     QPushButton* startButton;
-    RoutesTable* rtTable;
+    RoutesList* rtList;
+    QList<MapObj*> *objects;
+    MapObj* route;
 public:
-    explicit RoutesMenu(QWidget *parent = 0);
+    explicit RoutesMenu(QList<MapObj*> *_objects, QWidget *parent = 0);
     QPushButton* getNewRouteButton();
     
 signals:
     
 public slots:
+    void updateList();
+    void changeCurRoute( MapObj* _route );
     
 };
 

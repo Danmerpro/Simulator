@@ -30,7 +30,7 @@ private:
     int pointNum;
 public:
     explicit EditRoutesMenu(QWidget *parent = 0);
-    void setEditingRoute( MapObj* _route );
+    void setEditingRoute();
     
 signals:
     void readyButtonPushed();
@@ -43,7 +43,8 @@ public slots:
     void toPrevPoint();
     void toNumPoint( QString _num );
     void changeActivePoint();
-    void asseccoryChanged(int index);
+    void accessoryChanged(int index);
+    void changeCurRoute( MapObj* _route );
     
 };
 

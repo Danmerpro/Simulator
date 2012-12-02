@@ -16,19 +16,24 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout* sceneLayout = new QVBoxLayout();
     objects = new QList<MapObj*>();
     scene = new TrainningScene( objects, this );
-    rtMenu = new RoutesMenu(this);
+    rtMenu = new RoutesMenu (objects,this);
     editMenu = new EditRoutesMenu(this);
     sceneLayout->addWidget(scene);
     menuLayout->addWidget(rtMenu);
     menuLayout->addWidget(editMenu);
     mainLayout->addLayout(sceneLayout);
     mainLayout->addLayout(menuLayout);
-    mainLayout->setStretch(0,4);
+    mainLayout->setStretch(0,8);
+    mainLayout->setStretch(1,1);
     centralWidget->setLayout( mainLayout );
     this->setCentralWidget( centralWidget );
     connect(rtMenu->getNewRouteButton(),SIGNAL(clicked()),scene,SLOT(drawlingModeOn()));
-    connect(scene, SIGNAL(routeEditing(MapObj*)), this, SLOT(routeEditing(MapObj*)));
+    connect(scene, SIGNAL(routeEditing()), this, SLOT(routeEditing()));
+    connect(scene, SIGNAL(curRouteChanged(MapObj*)), rtMenu, SLOT(changeCurRoute(MapObj*)));
+    connect(scene, SIGNAL(curRouteChanged(MapObj*)), editMenu, SLOT(changeCurRoute(MapObj*)));
     connect(editMenu, SIGNAL(readyButtonPushed()), this, SLOT(finishEdit()));
+    connect(editMenu, SIGNAL(readyButtonPushed()), rtMenu, SLOT(updateList()));
+    connect(rtMenu->getNewRouteButton(),SIGNAL(clicked()), rtMenu, SLOT(updateList()));
     connect(editMenu, SIGNAL(readyButtonPushed()), scene, SLOT(finishEdit()));
     connect(editMenu, SIGNAL(activePointChanged()),scene, SLOT(changeAvtivePoint()));
     connect(scene, SIGNAL(activePointChanged()),editMenu, SLOT(changeActivePoint()));
@@ -70,11 +75,11 @@ void MainWindow::createStatusBar()
     statusBar();
 }
 
-void MainWindow::routeEditing( MapObj* _route )
+void MainWindow::routeEditing()
 {
     editMenu->show();
     rtMenu->hide();
-    editMenu->setEditingRoute( _route );
+    editMenu->setEditingRoute();
 }
 
 void MainWindow::finishEdit()

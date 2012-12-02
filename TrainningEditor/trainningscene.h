@@ -22,8 +22,10 @@ private:
     QPen* pen;
     QBrush* brush;
     RoutePoint* overCursor;
+    RoutePoint* movingPoint;
     bool darwlingRouteMode;
     bool editingMode;
+    bool mooving;
 
 public:
     explicit TrainningScene(QList<MapObj*> *_objects, QWidget *parent = 0);
@@ -32,7 +34,8 @@ public:
     
 signals:
     void newRouteAdded();
-    void routeEditing( MapObj* _route);
+    void curRouteChanged( MapObj* _route );
+    void routeEditing();
     void activePointChanged();
     
 public slots:
@@ -45,7 +48,7 @@ protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent ( QMouseEvent * event );
+    void mouseReleaseEvent(QMouseEvent *event );
     
 };
 

@@ -7,20 +7,18 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     title->setText( tr("Редактирование точек маршрута"));
     nextButton = new QPushButton( this );
     nextButton->setText( tr("Далее") );
-    nextButton->adjustSize();
     prevButton = new QPushButton( this );
     prevButton->setText( tr("Назад") );
-    prevButton->adjustSize();
     readyButton = new QPushButton( this );
     readyButton->setText( tr("Готово") );
-    readyButton->adjustSize();
     curPoint = new QLineEdit();
     curPoint->setMaximumWidth(30);
     accessoryCombo = new QComboBox(this);
-    accessoryCombo->addItem( tr ("Свой"), ours );
-    accessoryCombo->addItem( tr ("Чужой"), alien );
+    accessoryCombo->addItem( tr ("Свой"), 0 );
+    accessoryCombo->addItem( tr ("Чужой"), 1 );
     accessoryCombo->adjustSize();
     QHBoxLayout *HLayout1 = new QHBoxLayout();
+    HLayout1->addStretch();
     HLayout1->addWidget(prevButton);
     HLayout1->addWidget(curPoint);
     HLayout1->addWidget(nextButton);
@@ -36,7 +34,10 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     formLayout->addRow( tr("Высота:"), altBox);
     VLayout1->addLayout(formLayout);
     VLayout1->addLayout(HLayout1);
-    VLayout1->addWidget(readyButton);
+    QHBoxLayout *HLayout2 = new QHBoxLayout();
+    HLayout2->addStretch();
+    HLayout2->addWidget(readyButton);
+    VLayout1->addLayout(HLayout2);
     VLayout1->addStretch();
     this->setLayout(VLayout1);
     connect(readyButton, SIGNAL(clicked()), this, SIGNAL(readyButtonPushed()));
@@ -45,21 +46,35 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     connect(nextButton, SIGNAL(clicked()), this, SLOT(toNextPoint()));
     connect(prevButton, SIGNAL(clicked()), this, SLOT(toPrevPoint()));
     connect(curPoint, SIGNAL(textChanged(QString)),this, SLOT(toNumPoint(QString)));
-    connect(accessoryCombo, SIGNAL(currentIndexChanged(int)),this, SLOT(asseccoryChanged(int index)));
+    connect(accessoryCombo, SIGNAL(currentIndexChanged(int)),this, SLOT(accessoryChanged(int)));
+    this->setMinimumWidth(300);
     this->adjustSize();
 }
 
-void EditRoutesMenu::setEditingRoute( MapObj* _route )
+void EditRoutesMenu::setEditingRoute()
 {
-    route = _route;
+    int accessory;
+    switch( route->getAsseccory() )
+    {
+    case(ours):
+        accessory = 0;
+        break;
+    case(alien):
+        accessory = 1;
+    }
     it = route->getPoints()->begin();
     route->setActivePoint(&(*it));
     pointNum = 1;
     speedBox->setValue((*it).getSpeed());
     altBox->setValue((*it).getAlt());
-    accessoryCombo->setCurrentIndex( accessoryCombo->findData( route->getAsseccory()));
+    accessoryCombo->setCurrentIndex( accessoryCombo->findData( accessory ));
     curPoint->setText(QString().setNum(pointNum));
     prevButton->setEnabled(false);
+}
+
+void EditRoutesMenu::changeCurRoute( MapObj* _route )
+{
+    route = _route;
 }
 
 void EditRoutesMenu::pointSpeedChanged( )
@@ -178,8 +193,16 @@ void EditRoutesMenu::changeActivePoint()
     altBox->setValue((*it).getAlt());
 }
 
-void EditRoutesMenu::asseccoryChanged( int index )
+void EditRoutesMenu::accessoryChanged( int index )
 {
- //   ACCESSORY_TYPE assecory = reinterpret_cast<ACCESSORY_TYPE>(accessoryCombo->itemData(index));
- //   route->setAsseccory(assecory);
+    ACCESSORY_TYPE accessory;
+    switch( accessoryCombo->itemData(index).toInt())
+    {
+    case(0):
+        accessory = ours;
+        break;
+    case(1):
+        accessory = alien;
+    }
+    route->setAsseccory(accessory);
 }

@@ -28,7 +28,7 @@ private:
     EditRoutesMenu* editMenu;
     QList<MapObj*> *objects;
 private slots:
-    void routeEditing( MapObj* _route );
+    void routeEditing();
     void finishEdit();
 
 public:

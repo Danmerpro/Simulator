@@ -40,12 +40,12 @@ void TrainningScene::paintEvent(QPaintEvent *event)
         if( (*it) != curObj )
         {
             pen->setWidth(2);
-            if( curObj->getAsseccory() == ours )
+            if( (*it)->getAsseccory() == ours )
             {
                 pen->setColor(Qt::blue);
                 brush->setColor(Qt::blue);
             }
-            if( curObj->getAsseccory() == alien )
+            if( (*it)->getAsseccory() == alien )
             {
                 pen->setColor(Qt::red);
                 brush->setColor(Qt::red);
@@ -147,23 +147,24 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
         }
         update();
     }
-}
-
-void TrainningScene::mouseDoubleClickEvent ( QMouseEvent * event )
-{
     if( editingMode )
     {
         if(event->button() == Qt::LeftButton)
         {
-            RoutePoint* curP;
-            if( (curP = isOnPoint(event->posF())) != NULL )
+            if( (movingPoint = isOnPoint(event->posF())) != NULL )
             {
-                curObj->setActivePoint(curP);
+                curObj->setActivePoint(movingPoint);
+                mooving = true;
                 emit activePointChanged();
                 update();
             }
         }
     }
+}
+
+void TrainningScene::mouseReleaseEvent(QMouseEvent *event )
+{
+    mooving = false;
 }
 
 void TrainningScene::mouseMoveEvent(QMouseEvent *event)
@@ -175,9 +176,17 @@ void TrainningScene::mouseMoveEvent(QMouseEvent *event)
     }
     if( editingMode )
     {
-        RoutePoint* curP;
-        curP = isOnPoint(event->posF());
-        overCursor = curP;
+        if( mooving )
+        {
+            movingPoint->setX(event->posF().x());
+            movingPoint->setY(event->posF().y());
+        }
+        else
+        {
+            RoutePoint* curP;
+            curP = isOnPoint(event->posF());
+            overCursor = curP;
+        }
         update();
     }
 }
@@ -258,6 +267,7 @@ void TrainningScene::drawlingModeOn()
     curObj = new MapObj();
     objects->append( curObj );
     this->setMouseTracking( true );
+    emit curRouteChanged(curObj);
 }
 
 void TrainningScene::procesingNewRoute()
@@ -266,7 +276,7 @@ void TrainningScene::procesingNewRoute()
     this->setCursor(Qt::ArrowCursor);
     editingMode = true;
     this->setMouseTracking( true );
-    emit routeEditing( curObj );
+    emit routeEditing();
 }
 
 void TrainningScene::finishEdit()

@@ -23,7 +23,7 @@ public:
     MapObj();
     MapObj( QList<RoutePoint> _points );
     void appendPoint( RoutePoint p );
-    QList<RoutePoint>* getPoints(){ return &points; };
+    QList<RoutePoint>* getPoints(){ return &points; }
     void setRouteColor( QColor _color );
     QColor getRouteColor();
     void setType( MAP_OBJ_TYPE _type );

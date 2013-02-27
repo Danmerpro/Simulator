@@ -10,12 +10,14 @@
 #include <math.h>
 #include "mapobj.h"
 #include "routepoint.h"
+#include "options.h"
 
 
 class TrainningScene : public QWidget
 {
     Q_OBJECT
 private:
+    Options* opt;
     QList<MapObj*> *objects;
     MapObj* curObj;
     QPointF curMousePos;
@@ -28,9 +30,10 @@ private:
     bool mooving;
 
 public:
-    explicit TrainningScene(QList<MapObj*> *_objects, QWidget *parent = 0);
+    explicit TrainningScene(QList<MapObj*> *_objects, Options* _opt, QWidget *parent = 0);
 //    void drawBesierSpline( QPainter* painter,QList<QPointF> *points );
     RoutePoint* isOnPoint(QPointF p);
+    void setObjects( QList<MapObj*> *_objects );
     
 signals:
     void newRouteAdded();
@@ -40,9 +43,11 @@ signals:
     
 public slots:
     void drawlingModeOn();
-    void procesingNewRoute();
+    void procesingRoute();
     void finishEdit();
     void changeAvtivePoint();
+    void changeCurRoute( MapObj* _route );
+    void deleteRoute();
 
 protected:
     void paintEvent(QPaintEvent *event);

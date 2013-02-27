@@ -1,13 +1,14 @@
 #include "trainningscene.h"
 
-TrainningScene::TrainningScene( QList<MapObj*> *_objects, QWidget *parent) :
+TrainningScene::TrainningScene( QList<MapObj*> *_objects, Options *_opt, QWidget *parent) :
     QWidget(parent)
 {
     objects = _objects;
+    opt = _opt;
     darwlingRouteMode = false;
     editingMode = false;
     curObj = NULL;
-    connect(this,SIGNAL(newRouteAdded()),this, SLOT(procesingNewRoute()));
+    connect(this,SIGNAL(newRouteAdded()),this, SLOT(procesingRoute()));
 }
 
 void TrainningScene::paintEvent(QPaintEvent *event)
@@ -15,6 +16,7 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     QPointF from;
     QPointF to;
+    QFont* font = new QFont();
     pen = new QPen();
     brush = new QBrush(Qt::SolidPattern);
     pen->setWidth(2);
@@ -34,6 +36,8 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
+    font->setBold(false);
+    painter.setFont(*font);
     QList<MapObj*>::iterator it = objects->begin();
     for( it ; it != objects->end() ; it++ )
     {
@@ -115,10 +119,40 @@ void TrainningScene::paintEvent(QPaintEvent *event)
             {
                 brush->setColor(Qt::yellow);
             }
+            font->setBold(false);
+            painter.setFont(*font);
             painter.setBrush(*brush);
-            QPointF pLable((*itC).x()+6,(*itC).y()+6);
+            QPointF pLable((*itC).x()-14,(*itC).y()+14);
             painter.drawEllipse((*itC),4,4);
             painter.drawText(pLable,QString().setNum( c+1 ));
+            qreal lineLen;
+            if( opt->getAltOnMap() ||  overCursor == &(*itC) )
+            {
+                pLable.setX((*itC).x()+20);
+                pLable.setY((*itC).y()-12);
+                painter.drawText(pLable,QString().setNum((*itC).getAlt())+tr(" μ"));
+            }
+            if( opt->getSpeedOnMap() ||  overCursor == &(*itC))
+            {
+                pLable.setX((*itC).x()+20);
+                pLable.setY((*itC).y()+4);
+                painter.drawText(pLable,QString().setNum((*itC).getSpeed()) + tr(" κμ/χ"));
+            }
+            if( opt->getAltOnMap() || opt->getSpeedOnMap() ||  overCursor == &(*itC) )
+            {
+                lineLen = (QString().setNum((*itC).getAlt())+tr(" μ")).length() > (QString().setNum((*itC).getSpeed()) + tr(" κμ/χ")).length() ?
+                            (QString().setNum((*itC).getAlt())+tr(" μ")).length() : (QString().setNum((*itC).getSpeed()) + tr(" κμ/χ")).length();
+                painter.drawLine((*itC).x()+20,(*itC).y()-8,(*itC).x()+20+lineLen*5,(*itC).y()-8);
+                painter.drawLine((*itC).x(),(*itC).y(),(*itC).x()+20,(*itC).y()-8);
+            }
+            if( c == 0 && opt->getStartTimeOnMap() == true ||  overCursor == &(*itC) )
+            {
+                pLable.setX((*itC).x()-55);
+                pLable.setY((*itC).y());
+                font->setBold(true);
+                painter.setFont(*font);
+                painter.drawText(pLable,curObj->getStartTime().toString("hh:mm:ss"));
+            }
         }
     }
 }
@@ -270,7 +304,7 @@ void TrainningScene::drawlingModeOn()
     emit curRouteChanged(curObj);
 }
 
-void TrainningScene::procesingNewRoute()
+void TrainningScene::procesingRoute()
 {
     darwlingRouteMode = false;
     this->setCursor(Qt::ArrowCursor);
@@ -300,6 +334,30 @@ RoutePoint* TrainningScene::isOnPoint(QPointF p)
             return &(*itC);
     }
     return NULL;
+}
+
+void TrainningScene::changeCurRoute( MapObj* _route )
+{
+    curObj = _route;
+    update();
+}
+
+void TrainningScene::deleteRoute()
+{
+    if( objects->size() != 0 )
+    {
+        curObj = (*objects->begin());
+    }
+    else
+    {
+        curObj = NULL;
+    }
+    update();
+}
+
+void TrainningScene::setObjects( QList<MapObj*> *_objects )
+{
+    objects = _objects;
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QColor>
+#include <QTime>
 #include "routepoint.h"
 
 enum MAP_OBJ_TYPE { route };
@@ -17,6 +18,7 @@ private:
     QColor routeColor;
     ACCESSORY_TYPE asseccory;
     RoutePoint* activePoint;
+    QTime startTime;
 public:
     MapObj();
     MapObj( QList<RoutePoint> _points );
@@ -30,6 +32,8 @@ public:
     ACCESSORY_TYPE getAsseccory();
     void setActivePoint( RoutePoint* p );
     RoutePoint* getActivePoint();
+    void setStartTime( QTime t);
+    QTime getStartTime();
 };
 
 #endif // CRUVE_H

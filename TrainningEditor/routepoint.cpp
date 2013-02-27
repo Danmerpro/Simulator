@@ -14,22 +14,22 @@ RoutePoint::RoutePoint( QPointF _p) :
     alt = 0;
 }
 
-void RoutePoint::setSpeed( int _speed )
+void RoutePoint::setSpeed( double _speed )
 {
     speed = _speed;
 }
 
-void RoutePoint::setAlt( int _alt )
+void RoutePoint::setAlt( double _alt )
 {
     alt = _alt;
 }
 
-int RoutePoint::getSpeed()
+double RoutePoint::getSpeed()
 {
     return speed;
 }
 
-int RoutePoint::getAlt()
+double RoutePoint::getAlt()
 {
     return alt;
 }

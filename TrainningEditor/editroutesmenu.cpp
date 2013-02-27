@@ -3,50 +3,91 @@
 EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     QWidget(parent)
 {
-    title = new QLabel(this);
-    title->setText( tr("Редактирование точек маршрута"));
-    nextButton = new QPushButton( this );
-    nextButton->setText( tr("Далее") );
-    prevButton = new QPushButton( this );
-    prevButton->setText( tr("Назад") );
-    readyButton = new QPushButton( this );
-    readyButton->setText( tr("Готово") );
-    curPoint = new QLineEdit();
-    curPoint->setMaximumWidth(30);
     accessoryCombo = new QComboBox(this);
     accessoryCombo->addItem( tr ("Свой"), 0 );
     accessoryCombo->addItem( tr ("Чужой"), 1 );
     accessoryCombo->adjustSize();
+
+    startTime = new QTimeEdit();
+
+    speedBox = new QDoubleSpinBox(this);
+    speedBox->setMaximum(15000);
+
+    altBox = new QDoubleSpinBox(this);
+    altBox->setMaximum(50000);
+
+    nextButton = new QPushButton( this );
+    nextButton->setText( tr("Далее") );
+
+    prevButton = new QPushButton( this );
+    prevButton->setText( tr("Назад") );
+
+    readyButton = new QPushButton( this );
+    readyButton->setText( tr("Готово") );
+
+    curPoint = new QLineEdit();
+    curPoint->setMaximumWidth(30);
+
+    routeGropBox = new QGroupBox(this);
+    QFont* font = new QFont();
+    font->setBold(true);
+    routeGropBox->setFont(*font);
+    routeGropBox->setTitle(tr("Маршрут"));
+    QFormLayout *formLayout1 = new QFormLayout();
+    QLabel *asseccoryLable = new QLabel(tr("Принадлежность"));
+    QLabel *stTimeLable = new QLabel(tr("Время начала (чч:мм:сс)"));
+    formLayout1->addRow( asseccoryLable, accessoryCombo);
+    formLayout1->addRow( stTimeLable, startTime);
+    font->setBold(false);
+    asseccoryLable->setFont(*font);
+    startTime->setFont(*font);
+    stTimeLable->setFont(*font);
+    accessoryCombo->setFont(*font);
+    routeGropBox->setLayout(formLayout1);
+
+    pointGropBox = new QGroupBox(this);
+    font->setBold(true);
+    pointGropBox->setFont(*font);
+    QLabel *speedLable = new QLabel(tr("Скорость:"));
+    QLabel *altLable = new QLabel(tr("Высота:"));
+    pointGropBox->setTitle(tr("Маршрутная точка"));
+    QFormLayout *formLayout2 = new QFormLayout();
+    formLayout2->addRow( speedLable, speedBox);
+    formLayout2->addRow( altLable, altBox);
+    font->setBold(false);
+    speedLable->setFont(*font);
+    altLable->setFont(*font);
+    speedBox->setFont(*font);
+    altBox->setFont(*font);
+    pointGropBox->setLayout(formLayout2);
+
     QHBoxLayout *HLayout1 = new QHBoxLayout();
     HLayout1->addStretch();
     HLayout1->addWidget(prevButton);
     HLayout1->addWidget(curPoint);
     HLayout1->addWidget(nextButton);
-    QVBoxLayout *VLayout1 = new QVBoxLayout();
-    VLayout1->addWidget(title);
-    speedBox = new QSpinBox(this);
-    speedBox->setMaximum(10000);
-    altBox = new QSpinBox(this);
-    altBox->setMaximum(10000);
-    QFormLayout *formLayout = new QFormLayout();
-    formLayout->addRow( tr("Принадлежность:"), accessoryCombo);
-    formLayout->addRow( tr("Скорость:"), speedBox);
-    formLayout->addRow( tr("Высота:"), altBox);
-    VLayout1->addLayout(formLayout);
-    VLayout1->addLayout(HLayout1);
+
     QHBoxLayout *HLayout2 = new QHBoxLayout();
     HLayout2->addStretch();
     HLayout2->addWidget(readyButton);
+
+    QVBoxLayout *VLayout1 = new QVBoxLayout();
+    VLayout1->addWidget(routeGropBox);
+    VLayout1->addWidget(pointGropBox);
+    VLayout1->addLayout(HLayout1);
     VLayout1->addLayout(HLayout2);
     VLayout1->addStretch();
     this->setLayout(VLayout1);
+
     connect(readyButton, SIGNAL(clicked()), this, SIGNAL(readyButtonPushed()));
-    connect(speedBox, SIGNAL(valueChanged(int)), this, SLOT(pointSpeedChanged()));
-    connect(altBox, SIGNAL(valueChanged(int)), this, SLOT(pointAltChanged()));
+    connect(speedBox, SIGNAL(valueChanged(double)), this, SLOT(pointSpeedChanged()));
+    connect(altBox, SIGNAL(valueChanged(double)), this, SLOT(pointAltChanged()));
     connect(nextButton, SIGNAL(clicked()), this, SLOT(toNextPoint()));
     connect(prevButton, SIGNAL(clicked()), this, SLOT(toPrevPoint()));
     connect(curPoint, SIGNAL(textChanged(QString)),this, SLOT(toNumPoint(QString)));
     connect(accessoryCombo, SIGNAL(currentIndexChanged(int)),this, SLOT(accessoryChanged(int)));
+    connect(startTime, SIGNAL(editingFinished()), this, SLOT(startTimeChanged()));
+
     this->setMinimumWidth(300);
     this->adjustSize();
 }
@@ -70,6 +111,7 @@ void EditRoutesMenu::setEditingRoute()
     accessoryCombo->setCurrentIndex( accessoryCombo->findData( accessory ));
     curPoint->setText(QString().setNum(pointNum));
     prevButton->setEnabled(false);
+    startTime->setTime(route->getStartTime());
 }
 
 void EditRoutesMenu::changeCurRoute( MapObj* _route )
@@ -80,11 +122,13 @@ void EditRoutesMenu::changeCurRoute( MapObj* _route )
 void EditRoutesMenu::pointSpeedChanged( )
 {
     (*it).setSpeed(speedBox->value());
+    emit updateScene();
 }
 
 void EditRoutesMenu::pointAltChanged( )
 {
     (*it).setAlt(altBox->value());
+    emit updateScene();
 }
 
 void EditRoutesMenu::toNextPoint()
@@ -205,4 +249,23 @@ void EditRoutesMenu::accessoryChanged( int index )
         accessory = alien;
     }
     route->setAsseccory(accessory);
+}
+
+void EditRoutesMenu::paintEvent(QPaintEvent * event )
+{
+    QPainter painter(this);
+    QPen* pen = new QPen();
+    pen->setWidth(4);
+    painter.setPen(*pen);
+    QBrush* brush = new QBrush(Qt::Dense5Pattern);
+    brush->setColor(QColor(48,213,208));
+    painter.setBrush(*brush);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.drawRoundedRect(1,1,this->width()-2,this->height()-2,20,10);
+}
+
+void EditRoutesMenu::startTimeChanged()
+{
+    route->setStartTime(startTime->time());
+    emit updateScene();
 }

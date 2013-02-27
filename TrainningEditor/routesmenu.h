@@ -6,6 +6,9 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPainter>
+#include <QPen>
+#include <QBrush>
 #include "routeslist.h"
 #include "mapobj.h"
 
@@ -24,12 +27,22 @@ private:
 public:
     explicit RoutesMenu(QList<MapObj*> *_objects, QWidget *parent = 0);
     QPushButton* getNewRouteButton();
+    void paintEvent(QPaintEvent * event );
+    void setObjects( QList<MapObj*> *_objects );
     
 signals:
+    void curRouteChanged( MapObj* _route );
+    void routeDeleted();
+    void editCurRoute();
     
 public slots:
     void updateList();
     void changeCurRoute( MapObj* _route );
+    void deleteCurRoute();
+    void listIndChanged( int ind );
+    void setNewRouteButtonDisable();
+    void setNewRouteButtonEnable();
+    void checkButtons();
     
 };
 

@@ -7,16 +7,16 @@
 class RoutePoint : public QPointF
 {
 private:
-    int speed;
-    int alt;
+    double speed;
+    double alt;
     QColor pointColor;
 public:
     RoutePoint();
     RoutePoint( QPointF _p);
-    void setSpeed( int _speed );
-    void setAlt( int _alt );
-    int getSpeed();
-    int getAlt();
+    void setSpeed( double _speed );
+    void setAlt( double _alt );
+    double getSpeed();
+    double getAlt();
     void setPointColor( QColor _color );
     
 };

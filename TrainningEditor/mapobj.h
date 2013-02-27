@@ -1,4 +1,4 @@
-#ifndef MAPOBJ_H
+﻿#ifndef MAPOBJ_H
 #define MAPOBJ_H
 
 #include <QList>

@@ -1,4 +1,4 @@
-#ifndef MAPSCENE_H
+﻿#ifndef MAPSCENE_H
 #define MAPSCENE_H
 
 #include <QGraphicsScene>

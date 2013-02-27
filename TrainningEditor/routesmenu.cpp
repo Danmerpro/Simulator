@@ -1,16 +1,16 @@
-#include "routesmenu.h"
+ï»¿#include "routesmenu.h"
 
 RoutesMenu::RoutesMenu(QList<MapObj*> *_objects, QWidget *parent) :
     QWidget(parent)
 {
     objects = _objects;
     newRouteButton = new QPushButton( this );
-    newRouteButton->setText( tr("Íîâûé ìàðøðóò") );
+    newRouteButton->setText( tr("ÐÐ¾Ð²Ñ‹Ð¹ Ð¼Ð°Ñ€ÑˆÑ€ÑƒÑ‚") );
     deleteRouteButton = new QPushButton( this );
-    deleteRouteButton->setText( tr("Óäàëèòü") );
+    deleteRouteButton->setText( tr("Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ") );
     deleteRouteButton->setEnabled(false);
     editRouteButton = new QPushButton( this );
-    editRouteButton->setText( tr("Ðåäàêòèðîâàòü") );
+    editRouteButton->setText( tr("Ð ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ") );
     editRouteButton->setEnabled(false);
     QHBoxLayout *hLayout1 = new QHBoxLayout();
     hLayout1->addWidget( newRouteButton );
@@ -19,10 +19,10 @@ RoutesMenu::RoutesMenu(QList<MapObj*> *_objects, QWidget *parent) :
     QVBoxLayout *VLayout1 = new QVBoxLayout();
     VLayout1->addLayout(hLayout1);
     rtList = new RoutesList(this);
-    VLayout1->addWidget(new QLabel(tr("Ìàðøðóòû:"),this));
+    VLayout1->addWidget(new QLabel(tr("ÐœÐ°Ñ€ÑˆÑ€ÑƒÑ‚Ñ‹:"),this));
     VLayout1->addWidget(rtList);
     startButton = new QPushButton( this );
-    startButton->setText( tr("Íà÷àòü òðåíåðîâêó") );
+    startButton->setText( tr("ÐÐ°Ñ‡Ð°Ñ‚ÑŒ Ñ‚Ñ€ÐµÐ½ÐµÑ€Ð¾Ð²ÐºÑƒ") );
     startButton->adjustSize();
     startButton->setEnabled(false);
     QHBoxLayout *hLayout2 = new QHBoxLayout();
@@ -52,7 +52,7 @@ void RoutesMenu::updateList()
     foreach( MapObj* tmp, *objects)
     {
 
-        QListWidgetItem *curIt = new QListWidgetItem(tr("Ìàðøðóò ¹") + QString::number(i), rtList);
+        QListWidgetItem *curIt = new QListWidgetItem(tr("ÐœÐ°Ñ€ÑˆÑ€ÑƒÑ‚ â„–") + QString::number(i), rtList);
         switch( tmp->getAsseccory() )
         {
         case(ours):

@@ -1,4 +1,4 @@
-#include "trainningscene.h"
+ï»¿#include "trainningscene.h"
 
 TrainningScene::TrainningScene( QList<MapObj*> *_objects, Options *_opt, QWidget *parent) :
     QWidget(parent)
@@ -130,18 +130,18 @@ void TrainningScene::paintEvent(QPaintEvent *event)
             {
                 pLable.setX((*itC).x()+20);
                 pLable.setY((*itC).y()-12);
-                painter.drawText(pLable,QString().setNum((*itC).getAlt())+tr(" ì"));
+                painter.drawText(pLable,QString().setNum((*itC).getAlt())+tr(" Ð¼"));
             }
             if( opt->getSpeedOnMap() ||  overCursor == &(*itC))
             {
                 pLable.setX((*itC).x()+20);
                 pLable.setY((*itC).y()+4);
-                painter.drawText(pLable,QString().setNum((*itC).getSpeed()) + tr(" êì/÷"));
+                painter.drawText(pLable,QString().setNum((*itC).getSpeed()) + tr(" ÐºÐ¼/Ñ‡"));
             }
             if( opt->getAltOnMap() || opt->getSpeedOnMap() ||  overCursor == &(*itC) )
             {
-                lineLen = (QString().setNum((*itC).getAlt())+tr(" ì")).length() > (QString().setNum((*itC).getSpeed()) + tr(" êì/÷")).length() ?
-                            (QString().setNum((*itC).getAlt())+tr(" ì")).length() : (QString().setNum((*itC).getSpeed()) + tr(" êì/÷")).length();
+                lineLen = (QString().setNum((*itC).getAlt())+tr(" Ð¼")).length() > (QString().setNum((*itC).getSpeed()) + tr(" ÐºÐ¼/Ñ‡")).length() ?
+                            (QString().setNum((*itC).getAlt())+tr(" Ð¼")).length() : (QString().setNum((*itC).getSpeed()) + tr(" ÐºÐ¼/Ñ‡")).length();
                 painter.drawLine((*itC).x()+20,(*itC).y()-8,(*itC).x()+20+lineLen*5,(*itC).y()-8);
                 painter.drawLine((*itC).x(),(*itC).y(),(*itC).x()+20,(*itC).y()-8);
             }
@@ -171,7 +171,7 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
             {
                 if( curObj->getPoints()->size() <= 1 )
                 {
-                    QMessageBox::warning(this, tr("Îøèáêà"),tr("Ìàðøðóò äîëæåí ñîäåðæàòü õîòÿ áû 2 òî÷êè!"));
+                    QMessageBox::warning(this, tr("ÐžÑˆÐ¸Ð±ÐºÐ°"),tr("ÐœÐ°Ñ€ÑˆÑ€ÑƒÑ‚ Ð´Ð¾Ð»Ð¶ÐµÐ½ ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ Ñ…Ð¾Ñ‚ÑÐ±Ñ‹ 2 Ñ‚Ð¾Ñ‡ÐºÐ¸!"));
                 }
                 else
                 {

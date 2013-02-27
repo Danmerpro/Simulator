@@ -1,4 +1,4 @@
-#ifndef EDITROUTESMENU_H
+﻿#ifndef EDITROUTESMENU_H
 #define EDITROUTESMENU_H
 
 #include <QtWidgets/QWidget>

@@ -1,33 +1,33 @@
-#include "optionsmenu.h"
+ï»¿#include "optionsmenu.h"
 
 OptionsMenu::OptionsMenu(Options *_opt, QWidget *parent) :
     QWidget(parent)
 {
     opt = _opt;
     speedOnMap = new QCheckBox(this);
-    speedOnMap->setText(tr("ñêîðîñòü"));
+    speedOnMap->setText(tr("ÑÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ"));
     speedOnMap->setChecked( opt->getSpeedOnMap());
 
     altOnMap = new QCheckBox(this);
-    altOnMap->setText(tr("âûñîòó"));
+    altOnMap->setText(tr("Ð²Ñ‹ÑÐ¾Ñ‚Ñƒ"));
     altOnMap->setChecked( opt->getAltOnMap());
 
     startTimeOnMap = new QCheckBox(this);
-    startTimeOnMap->setText(tr("âðåìÿ íà÷àëà"));
+    startTimeOnMap->setText(tr("Ð²Ñ€ÐµÐ¼Ñ Ð½Ð°Ñ‡Ð°Ð»Ð°"));
     startTimeOnMap->setChecked( opt->getStartTimeOnMap());
 
     speedUnitsCombo = new QComboBox(this);
-    speedUnitsCombo->addItem( tr ("êì/÷"), 0 );
-    speedUnitsCombo->addItem( tr ("ì/ñ"), 1 );
+    speedUnitsCombo->addItem( tr ("ÐºÐ¼/Ñ‡"), 0 );
+    speedUnitsCombo->addItem( tr ("Ð¼/Ñ"), 1 );
 
     altUnitsCombo = new QComboBox(this);
-    altUnitsCombo->addItem( tr ("ì"), 0 );
-    altUnitsCombo->addItem( tr ("êì"), 1 );
+    altUnitsCombo->addItem( tr ("Ð¼"), 0 );
+    altUnitsCombo->addItem( tr ("ÐºÐ¼"), 1 );
 
     QVBoxLayout* mainLayout = new QVBoxLayout();
 
     onMapGroupBox = new QGroupBox(this);
-    onMapGroupBox->setTitle(tr("Îòîáðàæàòü íà êàðòå"));
+    onMapGroupBox->setTitle(tr("ÐžÑ‚Ð¾Ð±Ñ€Ð°Ð¶Ð°Ñ‚ÑŒ Ð½Ð° ÐºÐ°Ñ€Ñ‚Ðµ"));
     QFont* font = new QFont();
     font->setBold(true);
     onMapGroupBox->setFont(*font);
@@ -43,11 +43,11 @@ OptionsMenu::OptionsMenu(Options *_opt, QWidget *parent) :
     onMapGroupBox->adjustSize();
 
     unitGroupBox = new QGroupBox(this);
-    unitGroupBox->setTitle(tr("Îòîáðàæàòü"));
+    unitGroupBox->setTitle(tr("ÐžÑ‚Ð¾Ð±Ñ€Ð°Ð¶Ð°Ñ‚ÑŒ"));
     font->setBold(true);
     unitGroupBox->setFont(*font);
-    QLabel *speedLable = new QLabel(tr("ñêîðîñòü â"));
-    QLabel *altLable = new QLabel(tr("âûñîòó â"));
+    QLabel *speedLable = new QLabel(tr("ÑÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ Ð²"));
+    QLabel *altLable = new QLabel(tr("Ð²Ñ‹ÑÐ¾Ñ‚Ñƒ Ð²"));
     QFormLayout *unitLayout = new QFormLayout();
     font->setBold(false);
     speedLable->setFont(*font);

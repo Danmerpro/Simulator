@@ -1,4 +1,4 @@
-#ifndef OPTIONSMENU_H
+﻿#ifndef OPTIONSMENU_H
 #define OPTIONSMENU_H
 
 #include <QtWidgets/QWidget>

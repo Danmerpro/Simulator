@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ï»¿#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     createToolBars();
     createStatusBar();
     fileName = "";
-    setWindowTitle(tr("Training Editor - Íîâàÿ òðåíåðîâêà"));
+    setWindowTitle(tr("Training Editor - ÐÐ¾Ð²Ð°Ñ Ñ‚Ñ€ÐµÐ½Ð¸Ñ€Ð¾Ð²ÐºÐ°"));
     setWindowIcon(QIcon(":/Icon/RLSIcon.png"));
     QWidget *centralWidget = new QWidget(this);
     QHBoxLayout* mainLayout = new QHBoxLayout();
@@ -70,25 +70,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
-    newAction = saveAction = new QAction(tr("Ñîçäàòü"),this);
+    newAction = saveAction = new QAction(tr("Ð¡Ð¾Ð·Ð´Ð°Ñ‚ÑŒ"),this);
     connect(saveAction, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    saveAction = new QAction(tr("Ñîõðàíèòü"),this);
+    saveAction = new QAction(tr("Ð¡Ð¾Ð·Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ"),this);
     connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAction = new QAction(tr("Ñîõðàíèòü êàê"),this);
+    saveAsAction = new QAction(tr("Ð¡Ð¾Ð·Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ ÐºÐ°Ðº"),this);
     connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-    openAction = new QAction(tr("Îòêðûòü"),this);
+    openAction = new QAction(tr("ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ"),this);
     connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
 
-    exitAction = new QAction(tr("Âûõîä"),this);
+    exitAction = new QAction(tr("Ð’Ñ‹Ñ…Ð¾Ð´"),this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
 }
 void MainWindow::createMenus()
 {
-    fileMenu = new QMenu(tr("Ôàéë"));
+    fileMenu = new QMenu(tr("Ð¤Ð°Ð¹Ð»"));
     fileMenu->addAction(newAction);
     fileMenu->addAction(saveAction);
     fileMenu->addAction(saveAsAction);
@@ -134,7 +134,7 @@ void MainWindow::newFile()
         if( objects )
             delete objects;
         objects = new QList<MapObj*>();
-        setWindowTitle(tr("Training Editor - Íîâàÿ òðåíåðîâêà"));
+        setWindowTitle(tr("Training Editor - ÐÐ¾Ð²Ð°Ñ Ñ‚Ñ€ÐµÐ½Ð¸Ñ€Ð¾Ð²ÐºÐ°"));
         this->setWindowModified(false);
     }
 }
@@ -153,7 +153,7 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-    fileName = QFileDialog::getSaveFileName(this,tr("Cîõðàíèòü òðåíàæíóþ îáñòàíîâêó..."),".",tr("Routes Data Base files (*.xml)"));
+    fileName = QFileDialog::getSaveFileName(this,tr("Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ñ‚Ñ€ÐµÐ½Ð°Ð¶Ð½ÑƒÑŽ Ð¾Ð±ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÑƒ..."),".",tr("Routes Data Base files (*.xml)"));
     if(fileName.isEmpty())
         return false;
     return saveFile(fileName);
@@ -180,7 +180,7 @@ bool MainWindow::okToContinue()
 {
     if(isWindowModified())
     {
-        int r = QMessageBox::warning(this,tr("Ïîñòàâêè"),tr("Áàçà äàííûõ áûëà èçìåíåíà.\nÑîõðàíèòü èçìåíåíèÿ?"),QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
+        int r = QMessageBox::warning(this,tr("Ð ÐµÐ´Ð°ÐºÑ‚Ð¾Ñ€ Ñ‚Ñ€ÐµÐ½Ð°Ð¶Ð°"),tr("Ð¢Ñ€ÐµÐ½Ð°Ð¶Ð½Ð°Ñ Ð¾Ð±ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ° Ð±Ñ‹Ð»Ð° Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð°\nÐ¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ?"),QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
         if(r == QMessageBox::Yes)
         {
             return save();
@@ -210,6 +210,17 @@ bool MainWindow::saveFile(const QString &fileName)
             xmlWriter.writeAttribute("asseccory", "ours");
         if( (*it)->getAsseccory() == alien)
             xmlWriter.writeAttribute("asseccory", "alien");
+        xmlWriter.writeAttribute("start time", (*it)->getStartTime().toString());
+        QList<RoutePoint>::Iterator itP = (*it)-> getPoints()->begin();
+        for( itP ; itP != (*it)-> getPoints()->end() ; itP++ )
+        {
+            xmlWriter.writeStartElement("point");
+            xmlWriter.writeAttribute("speed", QString::number((*itP).getSpeed(),'f'));
+            xmlWriter.writeAttribute("alt", QString::number((*itP).getAlt(),'f'));
+            xmlWriter.writeAttribute("x", QString::number((*itP).x(),'f'));
+            xmlWriter.writeAttribute("y", QString::number((*itP).y(),'f'));
+            xmlWriter.writeEndElement();
+        }
         xmlWriter.writeEndElement();
     }
     xmlWriter.writeEndElement();

@@ -1,4 +1,4 @@
-#ifndef MAPVIEW_H
+﻿#ifndef MAPVIEW_H
 #define MAPVIEW_H
 
 #include <QGraphicsView>

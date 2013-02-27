@@ -1,11 +1,11 @@
-#include "editroutesmenu.h"
+ï»¿#include "editroutesmenu.h"
 
 EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     QWidget(parent)
 {
     accessoryCombo = new QComboBox(this);
-    accessoryCombo->addItem( tr ("Ñâîé"), 0 );
-    accessoryCombo->addItem( tr ("×óæîé"), 1 );
+    accessoryCombo->addItem( tr ("Ğ¡Ğ²Ğ¾Ğ¹"), 0 );
+    accessoryCombo->addItem( tr ("Ğ§ÑƒĞ¶Ğ¾Ğ¹"), 1 );
     accessoryCombo->adjustSize();
 
     startTime = new QTimeEdit();
@@ -17,13 +17,13 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     altBox->setMaximum(50000);
 
     nextButton = new QPushButton( this );
-    nextButton->setText( tr("Äàëåå") );
+    nextButton->setText( tr("Ğ”Ğ°Ğ»ĞµĞµ") );
 
     prevButton = new QPushButton( this );
-    prevButton->setText( tr("Íàçàä") );
+    prevButton->setText( tr("ĞĞ°Ğ·Ğ°Ğ´") );
 
     readyButton = new QPushButton( this );
-    readyButton->setText( tr("Ãîòîâî") );
+    readyButton->setText( tr("Ğ“Ğ¾Ñ‚Ğ¾Ğ²Ğ¾") );
 
     curPoint = new QLineEdit();
     curPoint->setMaximumWidth(30);
@@ -32,10 +32,10 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     QFont* font = new QFont();
     font->setBold(true);
     routeGropBox->setFont(*font);
-    routeGropBox->setTitle(tr("Ìàğøğóò"));
+    routeGropBox->setTitle(tr("ĞœĞ°Ñ€ÑˆÑ€ÑƒÑ‚"));
     QFormLayout *formLayout1 = new QFormLayout();
-    QLabel *asseccoryLable = new QLabel(tr("Ïğèíàäëåæíîñòü"));
-    QLabel *stTimeLable = new QLabel(tr("Âğåìÿ íà÷àëà (÷÷:ìì:ññ)"));
+    QLabel *asseccoryLable = new QLabel(tr("ĞŸÑ€Ğ¸Ğ½Ğ°Ğ´Ğ»ĞµĞ¶Ğ½Ğ¾ÑÑ‚ÑŒ"));
+    QLabel *stTimeLable = new QLabel(tr("Ğ’Ñ€ĞµĞ¼Ñ Ğ½Ğ°Ñ‡Ğ°Ğ»Ğ° (Ñ‡Ñ‡:Ğ¼Ğ¼:ÑÑ)"));
     formLayout1->addRow( asseccoryLable, accessoryCombo);
     formLayout1->addRow( stTimeLable, startTime);
     font->setBold(false);
@@ -48,9 +48,9 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     pointGropBox = new QGroupBox(this);
     font->setBold(true);
     pointGropBox->setFont(*font);
-    QLabel *speedLable = new QLabel(tr("Ñêîğîñòü:"));
-    QLabel *altLable = new QLabel(tr("Âûñîòà:"));
-    pointGropBox->setTitle(tr("Ìàğøğóòíàÿ òî÷êà"));
+    QLabel *speedLable = new QLabel(tr("Ğ¡ĞºĞ¾Ñ€Ğ¾ÑÑ‚ÑŒ:"));
+    QLabel *altLable = new QLabel(tr("Ğ’Ñ‹ÑĞ¾Ñ‚Ğ°:"));
+    pointGropBox->setTitle(tr("ĞœĞ°Ñ€ÑˆÑ€ÑƒÑ‚Ğ½Ğ°Ñ Ñ‚Ğ¾Ñ‡ĞºĞ°"));
     QFormLayout *formLayout2 = new QFormLayout();
     formLayout2->addRow( speedLable, speedBox);
     formLayout2->addRow( altLable, altBox);
@@ -180,7 +180,7 @@ void EditRoutesMenu::toNumPoint( QString _num )
     int num = _num.toInt();
     if( num > route->getPoints()->size())
     {
-        QMessageBox::warning(this, tr("Îøèáêà"),tr("Â ìàğøğóòå íåò òî÷êè ñ òàêèì íîìåğîì!"));
+        QMessageBox::warning(this, tr("ĞÑˆĞ¸Ğ±ĞºĞ°"),tr("Ğ’ Ğ¼Ğ°Ñ€ÑˆÑ€ÑƒÑ‚Ğµ Ğ½ĞµÑ‚ Ñ‚Ğ¾Ñ‡ĞºĞ¸ Ñ Ñ‚Ğ°ĞºĞ¸Ğ¼ Ğ½Ğ¾Ğ¼ĞµÑ€Ğ¾Ğ¼!"));
         num = pointNum;
     }
     it = route->getPoints()->begin();

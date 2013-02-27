@@ -1,4 +1,4 @@
-#ifndef ROUTEPOINT_H
+﻿#ifndef ROUTEPOINT_H
 #define ROUTEPOINT_H
 
 #include <QPointF>

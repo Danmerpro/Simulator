@@ -202,9 +202,21 @@ bool MainWindow::saveFile(const QString &fileName)
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument();
     xmlWriter.writeStartElement("routes_data_base");
+    QList<MapObj*>::iterator it = objects->begin();
+    for( it ; it != objects->end() ; it++ )
+    {
+        xmlWriter.writeStartElement("route");
+        if( (*it)->getAsseccory() == ours)
+            xmlWriter.writeAttribute("asseccory", "ours");
+        if( (*it)->getAsseccory() == alien)
+            xmlWriter.writeAttribute("asseccory", "alien");
+        xmlWriter.writeEndElement();
+    }
     xmlWriter.writeEndElement();
+    xmlWriter.writeEndDocument();
     outputXML->close();
     this->setWindowModified(false);
+    setWindowTitle(tr("Training Editor - ") + fileName );
     return true;
 }
 

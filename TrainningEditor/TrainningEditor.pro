@@ -1,3 +1,4 @@
+QT += widgets
 HEADERS += \
     mainwindow.h \
     trainningscene.h \

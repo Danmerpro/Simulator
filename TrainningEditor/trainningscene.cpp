@@ -163,7 +163,7 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
     {
         if(event->button() == Qt::LeftButton)
         {
-            curObj->appendPoint( RoutePoint(event->posF()) );
+            curObj->appendPoint( RoutePoint(event->localPos()) );
         }
         if(event->button() == Qt::RightButton)
         {
@@ -185,7 +185,7 @@ void TrainningScene::mousePressEvent(QMouseEvent *event)
     {
         if(event->button() == Qt::LeftButton)
         {
-            if( (movingPoint = isOnPoint(event->posF())) != NULL )
+            if( (movingPoint = isOnPoint(event->localPos())) != NULL )
             {
                 curObj->setActivePoint(movingPoint);
                 mooving = true;
@@ -205,20 +205,20 @@ void TrainningScene::mouseMoveEvent(QMouseEvent *event)
 {
     if( darwlingRouteMode )
     {
-        curMousePos = event->posF();
+        curMousePos = event->localPos();
         update();
     }
     if( editingMode )
     {
         if( mooving )
         {
-            movingPoint->setX(event->posF().x());
-            movingPoint->setY(event->posF().y());
+            movingPoint->setX(event->localPos().x());
+            movingPoint->setY(event->localPos().y());
         }
         else
         {
             RoutePoint* curP;
-            curP = isOnPoint(event->posF());
+            curP = isOnPoint(event->localPos());
             overCursor = curP;
         }
         update();

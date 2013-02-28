@@ -1,11 +1,11 @@
 #ifndef ROUTESMENU_H
 #define ROUTESMENU_H
 
-#include <QWidget>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QLabel>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QLabel>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>

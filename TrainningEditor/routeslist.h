@@ -1,7 +1,7 @@
 #ifndef ROUTESLIST_H
 #define ROUTESLIST_H
 
-#include <QListWidget>
+#include <QtWidgets/QListWidget>
 
 class RoutesList : public QListWidget
 {

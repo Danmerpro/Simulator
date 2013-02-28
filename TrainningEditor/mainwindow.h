@@ -1,16 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QTextCodec>
 #include <QXmlStreamWriter>
-#include <QFileDialog>
+#include <QtWidgets/QFileDialog>
 #include "routesmenu.h"
 #include "trainningscene.h"
 #include "editroutesmenu.h"

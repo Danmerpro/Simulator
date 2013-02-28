@@ -1,12 +1,12 @@
 #ifndef TRAINNINGSCENE_H
 #define TRAINNINGSCENE_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QPainter>
 #include <QBrush>
 #include <QMouseEvent>
 #include <Qpen>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <math.h>
 #include "mapobj.h"
 #include "routepoint.h"

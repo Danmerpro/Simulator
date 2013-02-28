@@ -1,19 +1,19 @@
 #ifndef OPTIONSMENU_H
 #define OPTIONSMENU_H
 
-#include <QWidget>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
-#include <QGroupBox>
+#include <QtWidgets/QGroupBox>
 #include <QFont>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QFormLayout>
-#include <QLabel>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QLabel>
 #include "options.h"
 
 class OptionsMenu : public QWidget

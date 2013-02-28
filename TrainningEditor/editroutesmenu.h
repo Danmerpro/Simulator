@@ -1,22 +1,22 @@
 #ifndef EDITROUTESMENU_H
 #define EDITROUTESMENU_H
 
-#include <QWidget>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QComboBox>
-#include <QDoubleSpinBox>
-#include <QFormLayout>
-#include <QLineEdit>
-#include <QMessageBox>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QMessageBox>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
-#include <QGroupBox>
+#include <QtWidgets/QGroupBox>
 #include <QFont>
-#include <QLabel>
-#include <QTimeEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QTimeEdit>
 #include "mapobj.h"
 
 class EditRoutesMenu : public QWidget

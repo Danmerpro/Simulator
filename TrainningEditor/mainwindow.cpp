@@ -138,6 +138,7 @@ void MainWindow::newFile()
         setWindowTitle(tr("Training Editor - Новая тренировка"));
         this->setWindowModified(false);
         systemReinit();
+        statusBar()->showMessage(tr("Новый тренаж создан"), 2000);
     }
 }
 
@@ -195,6 +196,7 @@ void MainWindow::open()
     }
     setWindowTitle(fileName);
     systemReinit();
+    statusBar()->showMessage(tr("Файл тренажа загружен"), 2000);
 }
 
 
@@ -337,6 +339,7 @@ bool MainWindow::saveFile(const QString &fileName)
     outputXML->close();
     this->setWindowModified(false);
     setWindowTitle(tr("Training Editor - ") + fileName );
+     statusBar()->showMessage(tr("Тренаж сохранен"), 2000);
     return true;
 }
 
@@ -345,6 +348,7 @@ void MainWindow::systemReinit()
     scene->setObjects( objects );
     rtMenu->setObjects( objects );
     scene->update();
+    scene->changeCurRoute( NULL );
     rtMenu->updateList();
     rtMenu->checkButtons();
 }

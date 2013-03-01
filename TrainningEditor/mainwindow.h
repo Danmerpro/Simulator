@@ -53,6 +53,8 @@ private slots:
     void newFile();
     void readDataBaseElement( QXmlStreamReader &xmlReader );
     void readRouteElement(QXmlStreamReader &xmlReader , MapObj *obj);
+    void systemReinit();
+    void trainingModified();
 
 public:
     MainWindow(QWidget *parent = 0);

@@ -36,6 +36,9 @@ RoutesMenu::RoutesMenu(QList<MapObj*> *_objects, QWidget *parent) :
     connect(deleteRouteButton, SIGNAL(clicked()), this, SLOT(deleteCurRoute()));
     connect(editRouteButton, SIGNAL(clicked()), this, SIGNAL(editCurRoute()));
     connect(newRouteButton, SIGNAL(clicked()), this, SLOT(setNewRouteButtonDisable()));
+    connect(deleteRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
+    connect(editRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
+    connect(newRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
     updateList();
 }
 

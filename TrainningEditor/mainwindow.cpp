@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(rtMenu, SIGNAL(routeDeleted()),scene, SLOT(deleteRoute()));
     connect(rtMenu, SIGNAL(routeDeleted()),rtMenu, SLOT(checkButtons()));
     connect(rtMenu, SIGNAL(editCurRoute()),scene, SLOT(procesingRoute()));
+    connect(rtMenu, SIGNAL(trModified()),this, SLOT(trainingModified()));
 
     connect(editMenu, SIGNAL(readyButtonPushed()), rtMenu, SLOT(checkButtons()));
     connect(editMenu, SIGNAL(readyButtonPushed()), scene, SLOT(finishEdit()));
@@ -73,10 +74,10 @@ void MainWindow::createActions()
     newAction = saveAction = new QAction(tr("Создать"),this);
     connect(saveAction, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    saveAction = new QAction(tr("Созранить"),this);
+    saveAction = new QAction(tr("Сохранить"),this);
     connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAction = new QAction(tr("Созранить как"),this);
+    saveAsAction = new QAction(tr("Сохранить как"),this);
     connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
 
     openAction = new QAction(tr("Открыть"),this);
@@ -136,6 +137,7 @@ void MainWindow::newFile()
         objects = new QList<MapObj*>();
         setWindowTitle(tr("Training Editor - Новая тренировка"));
         this->setWindowModified(false);
+        systemReinit();
     }
 }
 
@@ -191,33 +193,36 @@ void MainWindow::open()
     {
         std::cerr<<"Error: failed to parse file"<<qPrintable(fileName)<<": "<<qPrintable(xmlReader.errorString())<< std::endl;
     }
-    scene->update();
+    setWindowTitle(fileName);
+    systemReinit();
 }
 
 
 void MainWindow::readDataBaseElement(QXmlStreamReader &xmlReader)
 {
+    MapObj* obj;
     xmlReader.readNext();
-    std::cerr<<"1111"<<qPrintable(xmlReader.name().toString())<<std::endl;
     while(!xmlReader.atEnd())
     {
         if(xmlReader.isEndElement())
         {
             if(xmlReader.name() == "routes_data_base")
-            xmlReader.readNext();
-            break;
+            {
+                xmlReader.readNext();
+                break;
+            }
         }
         if(xmlReader.isStartElement())
         {
             if(xmlReader.name() == "route")
             {
-                MapObj* obj = new MapObj();
+                obj = new MapObj();
                 QString asseccory = xmlReader.attributes().value("asseccory").toString();
                 if( asseccory == "ours" )
                     obj->setAsseccory(ours);
                 if( asseccory == "alien" )
                     obj->setAsseccory(alien);
-                obj->setStartTime(QTime::fromString(xmlReader.attributes().value("start time").toString()));
+                obj->setStartTime(QTime::fromString(xmlReader.attributes().value("start_time").toString()));
                 readRouteElement( xmlReader, obj );
             }
             else
@@ -228,7 +233,6 @@ void MainWindow::readDataBaseElement(QXmlStreamReader &xmlReader)
         else
         {
             xmlReader.readNext();
-             std::cerr<<"222"<<qPrintable(xmlReader.name().toString())<<std::endl;
         }
     }
 }
@@ -256,7 +260,12 @@ void  MainWindow::readRouteElement(QXmlStreamReader &xmlReader, MapObj* obj )
             {
                obj->appendPoint( *p );
                xmlReader.readNext();
-               break;
+            }
+            if(xmlReader.name() == "route")
+            {
+                objects->append( obj );
+                xmlReader.readNext();
+                break;
             }
         }
         xmlReader.readNext();
@@ -310,7 +319,7 @@ bool MainWindow::saveFile(const QString &fileName)
             xmlWriter.writeAttribute("asseccory", "ours");
         if( (*it)->getAsseccory() == alien)
             xmlWriter.writeAttribute("asseccory", "alien");
-        xmlWriter.writeAttribute("start time", (*it)->getStartTime().toString());
+        xmlWriter.writeAttribute("start_time", (*it)->getStartTime().toString());
         QList<RoutePoint>::Iterator itP = (*it)-> getPoints()->begin();
         for( itP ; itP != (*it)-> getPoints()->end() ; itP++ )
         {
@@ -331,5 +340,22 @@ bool MainWindow::saveFile(const QString &fileName)
     return true;
 }
 
+void MainWindow::systemReinit()
+{
+    scene->setObjects( objects );
+    rtMenu->setObjects( objects );
+    scene->update();
+    rtMenu->updateList();
+    rtMenu->checkButtons();
+}
+
+void MainWindow::trainingModified()
+{
+    if( fileName == NULL )
+        setWindowTitle(tr("Training Editor - Новая тренировка[*]"));
+    else
+        setWindowTitle(tr("Training Editor - ") + fileName + tr("[*]"));
+    this->setWindowModified(true);
+}
 
 

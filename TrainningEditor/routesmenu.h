@@ -34,6 +34,7 @@ signals:
     void curRouteChanged( MapObj* _route );
     void routeDeleted();
     void editCurRoute();
+    void trModified();
     
 public slots:
     void updateList();

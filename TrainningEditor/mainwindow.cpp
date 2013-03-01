@@ -161,8 +161,108 @@ bool MainWindow::saveAs()
 
 void MainWindow::open()
 {
+    fileName = QFileDialog::getOpenFileName(this,tr("Открыть тренажную обстановку..."),".",tr("Routes Data Base files (*.xml)"));
+    QFile* inputXML = new QFile(fileName);
+    inputXML->open(QIODevice::ReadOnly);
+    QXmlStreamReader xmlReader(inputXML);
+    objects = new QList<MapObj*>();
+    xmlReader.readNext();
+    while(!xmlReader.atEnd())
+    {
+        if(xmlReader.isStartElement())
+        {
+            if(xmlReader.name() == "routes_data_base")
+            {
+                readDataBaseElement(xmlReader);
+            }
+            else
+            {
+                xmlReader.readNext();
+            }
+        }
+        else
+        {
+            xmlReader.readNext();
+        }
 
+    }
+    inputXML->close();
+    if(xmlReader.hasError())
+    {
+        std::cerr<<"Error: failed to parse file"<<qPrintable(fileName)<<": "<<qPrintable(xmlReader.errorString())<< std::endl;
+    }
+    scene->update();
 }
+
+
+void MainWindow::readDataBaseElement(QXmlStreamReader &xmlReader)
+{
+    xmlReader.readNext();
+    std::cerr<<"1111"<<qPrintable(xmlReader.name().toString())<<std::endl;
+    while(!xmlReader.atEnd())
+    {
+        if(xmlReader.isEndElement())
+        {
+            if(xmlReader.name() == "routes_data_base")
+            xmlReader.readNext();
+            break;
+        }
+        if(xmlReader.isStartElement())
+        {
+            if(xmlReader.name() == "route")
+            {
+                MapObj* obj = new MapObj();
+                QString asseccory = xmlReader.attributes().value("asseccory").toString();
+                if( asseccory == "ours" )
+                    obj->setAsseccory(ours);
+                if( asseccory == "alien" )
+                    obj->setAsseccory(alien);
+                obj->setStartTime(QTime::fromString(xmlReader.attributes().value("start time").toString()));
+                readRouteElement( xmlReader, obj );
+            }
+            else
+            {
+                 xmlReader.readNext();
+            }
+        }
+        else
+        {
+            xmlReader.readNext();
+             std::cerr<<"222"<<qPrintable(xmlReader.name().toString())<<std::endl;
+        }
+    }
+}
+
+void  MainWindow::readRouteElement(QXmlStreamReader &xmlReader, MapObj* obj )
+{
+    xmlReader.readNext();
+    RoutePoint* p;
+    while(!xmlReader.atEnd())
+    {
+        if(xmlReader.isStartElement())
+        {
+            if(xmlReader.name() == "point")
+            {
+                p = new RoutePoint();
+                p->setAlt( xmlReader.attributes().value("alt").toString().toDouble() );
+                p->setSpeed( xmlReader.attributes().value("speed").toString().toDouble() );
+                p->setX( xmlReader.attributes().value("x").toString().toDouble());
+                p->setY( xmlReader.attributes().value("y").toString().toDouble());
+            }
+        }
+        if(xmlReader.isEndElement())
+        {
+            if(xmlReader.name() == "point")
+            {
+               obj->appendPoint( *p );
+               xmlReader.readNext();
+               break;
+            }
+        }
+        xmlReader.readNext();
+    }
+}
+
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {

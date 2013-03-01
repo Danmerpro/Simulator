@@ -10,7 +10,9 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QTextCodec>
 #include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 #include <QtWidgets/QFileDialog>
+#include <iostream>
 #include "routesmenu.h"
 #include "trainningscene.h"
 #include "editroutesmenu.h"
@@ -49,6 +51,8 @@ private slots:
     bool saveAs();
     void open();
     void newFile();
+    void readDataBaseElement( QXmlStreamReader &xmlReader );
+    void readRouteElement(QXmlStreamReader &xmlReader , MapObj *obj);
 
 public:
     MainWindow(QWidget *parent = 0);

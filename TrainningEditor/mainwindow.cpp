@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     QHBoxLayout* mainLayout = new QHBoxLayout();
     QVBoxLayout* rigthLayout = new QVBoxLayout();
     QHBoxLayout* menuLayout = new QHBoxLayout();
-    QVBoxLayout* sceneLayout = new QVBoxLayout();
+    sceneLayout = new QVBoxLayout();
+    sim = NULL;
     opt = new Options();
     optMenu = new OptionsMenu( opt, this );
     objects = new QList<MapObj*>();
@@ -46,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(rtMenu, SIGNAL(routeDeleted()),rtMenu, SLOT(checkButtons()));
     connect(rtMenu, SIGNAL(editCurRoute()),scene, SLOT(procesingRoute()));
     connect(rtMenu, SIGNAL(trModified()),this, SLOT(trainingModified()));
+    connect(rtMenu, SIGNAL(startTraining()),this, SLOT(startTraining()));
 
     connect(editMenu, SIGNAL(readyButtonPushed()), rtMenu, SLOT(checkButtons()));
     connect(editMenu, SIGNAL(readyButtonPushed()), scene, SLOT(finishEdit()));
@@ -360,6 +362,17 @@ void MainWindow::trainingModified()
     else
         setWindowTitle(tr("Training Editor - ") + fileName + tr("[*]"));
     this->setWindowModified(true);
+}
+
+void  MainWindow::startTraining()
+{
+    sceneLayout->removeWidget( scene );
+    scene->hide();
+    if( sim != NULL)
+        delete sim;
+    sim = new Simulation( objects );
+    sceneLayout->addWidget(sim);
+    sim->start();
 }
 
 

@@ -8,17 +8,17 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
-#include <QTextCodec>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QtWidgets/QFileDialog>
 #include <iostream>
+#include <QString>
 #include "routesmenu.h"
 #include "trainningscene.h"
 #include "editroutesmenu.h"
 #include "options.h"
 #include "optionsmenu.h"
-#include "QString"
+#include "simulation.h"
 
 class MainWindow : public QMainWindow
 {
@@ -32,6 +32,7 @@ private:
     void createStatusBar();
     bool okToContinue();
     TrainningScene* scene;
+    Simulation* sim;
     RoutesMenu* rtMenu;
     EditRoutesMenu* editMenu;
     QList<MapObj*> *objects;
@@ -44,6 +45,8 @@ private:
     QAction *openAction;
     QAction *exitAction;
     QString fileName;
+    QVBoxLayout* sceneLayout;
+
 private slots:
     void routeEditing();
     void finishEdit();
@@ -55,6 +58,7 @@ private slots:
     void readRouteElement(QXmlStreamReader &xmlReader , MapObj *obj);
     void systemReinit();
     void trainingModified();
+    void startTraining();
 
 public:
     MainWindow(QWidget *parent = 0);

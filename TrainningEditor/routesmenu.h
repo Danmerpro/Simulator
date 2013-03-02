@@ -35,6 +35,7 @@ signals:
     void routeDeleted();
     void editCurRoute();
     void trModified();
+    void startTraining();
     
 public slots:
     void updateList();

@@ -8,7 +8,8 @@ HEADERS += \
     routepoint.h \
     routeslist.h \
     optionsmenu.h \
-    options.h
+    options.h \
+    simulation.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -20,7 +21,8 @@ SOURCES += \
     routepoint.cpp \
     routeslist.cpp \
     optionsmenu.cpp \
-    options.cpp
+    options.cpp \
+    simulation.cpp
 
 RESOURCES += \
     Resources/MapResources.qrc

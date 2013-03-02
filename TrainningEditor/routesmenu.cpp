@@ -39,6 +39,7 @@ RoutesMenu::RoutesMenu(QList<MapObj*> *_objects, QWidget *parent) :
     connect(deleteRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
     connect(editRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
     connect(newRouteButton, SIGNAL(clicked()), this, SIGNAL(trModified()));
+    connect(startButton, SIGNAL(clicked()), this, SIGNAL(startTraining()));
     updateList();
 }
 
@@ -133,11 +134,13 @@ void RoutesMenu::checkButtons()
     {
         deleteRouteButton->setEnabled(true);
         editRouteButton->setEnabled(true);
+        startButton->setEnabled(true);
     }
     else
     {
         deleteRouteButton->setEnabled(false);
         editRouteButton->setEnabled(false);
+        startButton->setEnabled(false);
     }
 }
 

@@ -11,6 +11,7 @@
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QtWidgets/QFileDialog>
+#include <QScrollArea>
 #include <iostream>
 #include <QString>
 #include "routesmenu.h"
@@ -46,6 +47,8 @@ private:
     QAction *exitAction;
     QString fileName;
     QVBoxLayout* sceneLayout;
+    QScrollArea* scrollScene;
+    QScrollArea* scrollSim;
 
 private slots:
     void routeEditing();

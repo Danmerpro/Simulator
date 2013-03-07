@@ -8,6 +8,7 @@ TrainningScene::TrainningScene( QList<MapObj*> *_objects, Options *_opt, QWidget
     darwlingRouteMode = false;
     editingMode = false;
     curObj = NULL;
+    this->setFixedSize(1000,1000);
     connect(this,SIGNAL(newRouteAdded()),this, SLOT(procesingRoute()));
 }
 
@@ -23,16 +24,18 @@ void TrainningScene::paintEvent(QPaintEvent *event)
     pen->setColor(Qt::black);
     painter.setPen(*pen);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.drawEllipse(QPoint(500,350),300,300);
-    painter.drawEllipse(QPoint(500,350),200,200);
-    painter.drawEllipse(QPoint(500,350),100,100);
-    painter.drawLine(500,50,500,650);
-    painter.drawLine(200,350,800,350);
+    painter.drawEllipse(QPoint(500,500),400,400);
+    painter.drawEllipse(QPoint(500,500),300,300);
+    painter.drawEllipse(QPoint(500,500),200,200);
+    painter.drawEllipse(QPoint(500,500),100,100);
+    painter.drawLine(500,100,500,900);
+    painter.drawLine(100,500,900,500);
     pen->setWidth(1);
     painter.setPen(*pen);
-    painter.drawEllipse(QPoint(500,350),250,250);
-    painter.drawEllipse(QPoint(500,350),150,150);
-    painter.drawEllipse(QPoint(500,350),50,50);
+    painter.drawEllipse(QPoint(500,500),350,350);
+    painter.drawEllipse(QPoint(500,500),250,250);
+    painter.drawEllipse(QPoint(500,500),150,150);
+    painter.drawEllipse(QPoint(500,500),50,50);
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
@@ -136,12 +139,12 @@ void TrainningScene::paintEvent(QPaintEvent *event)
             {
                 pLable.setX((*itC).x()+20);
                 pLable.setY((*itC).y()+4);
-                painter.drawText(pLable,QString().setNum((*itC).getSpeed()) + tr(" км/ч"));
+                painter.drawText(pLable,QString().setNum((*itC).getSpeed()*3600/1000) + tr(" км/ч"));
             }
             if( opt->getAltOnMap() || opt->getSpeedOnMap() ||  overCursor == &(*itC) )
             {
-                lineLen = (QString().setNum((*itC).getAlt())+tr(" м")).length() > (QString().setNum((*itC).getSpeed()) + tr(" км/ч")).length() ?
-                            (QString().setNum((*itC).getAlt())+tr(" м")).length() : (QString().setNum((*itC).getSpeed()) + tr(" км/ч")).length();
+                lineLen = (QString().setNum((*itC).getAlt())+tr(" м")).length() > (QString().setNum((*itC).getSpeed()*3600/1000) + tr(" км/ч")).length() ?
+                            (QString().setNum((*itC).getAlt())+tr(" м")).length() : (QString().setNum((*itC).getSpeed()*3600/1000) + tr(" км/ч")).length();
                 painter.drawLine((*itC).x()+20,(*itC).y()-8,(*itC).x()+20+lineLen*5,(*itC).y()-8);
                 painter.drawLine((*itC).x(),(*itC).y(),(*itC).x()+20,(*itC).y()-8);
             }

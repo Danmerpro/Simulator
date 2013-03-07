@@ -11,7 +11,7 @@ EditRoutesMenu::EditRoutesMenu(QWidget *parent) :
     startTime = new QTimeEdit();
 
     speedBox = new QDoubleSpinBox(this);
-    speedBox->setMaximum(15000);
+    speedBox->setMaximum(30000);
 
     altBox = new QDoubleSpinBox(this);
     altBox->setMaximum(50000);
@@ -121,7 +121,7 @@ void EditRoutesMenu::changeCurRoute( MapObj* _route )
 
 void EditRoutesMenu::pointSpeedChanged( )
 {
-    (*it).setSpeed(speedBox->value());
+    (*it).setSpeed(speedBox->value()*1000/3600);
     emit updateScene();
 }
 

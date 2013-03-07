@@ -9,10 +9,25 @@
 #include <QList>
 #include <QBrush>
 #include <Qpen>
+#include <QLineF>
 #include <math.h>
+#include <iostream>
 #include "mapobj.h"
 #include "routepoint.h"
 #include "options.h"
+
+typedef struct
+{
+    MapObj* obj;
+    QList<RoutePoint>::iterator lastInCurRoute;
+    RoutePoint curPoint;
+    double aX;
+    double aY;
+    double vX0;
+    double vY0;
+    int timeCounter;
+    bool complete;
+}SIM_OBJ;
 
 class Simulation : public QWidget
 {
@@ -20,12 +35,10 @@ class Simulation : public QWidget
 
 private:
     Options* opt;
-    QList<MapObj*> *objects;
-    QList<RoutePoint> *curPoints;
-    QList<QList<RoutePoint>::iterator> *lastInCurRoute;
+    SIM_OBJ* simObjects;
+    int objCount;
     QTimer *ptimer;
     QTime *timeElapsed;
-    int timeCounter;
     QPen* pen;
     QBrush* brush;
 

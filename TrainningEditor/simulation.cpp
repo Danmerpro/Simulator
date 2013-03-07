@@ -3,28 +3,32 @@
 Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     QWidget(parent)
 {
-    objects = _objects;
+    this->setFixedSize(1000,1000);
 
     ptimer = new QTimer();
     ptimer->setInterval(40);
 
-    curPoints = new QList<RoutePoint>();
+    objCount = _objects->size();
+    simObjects = new SIM_OBJ[objCount];
 
-    QList<MapObj*>::Iterator it = objects->begin();
-    for( it ; it != objects->end() ; it++ )
+    int i = 0;
+    QList<MapObj *>::Iterator it = _objects->begin();
+    for( it ; it != _objects->end() ; it++, i++ )
     {
-        RoutePoint p;
-        p.setX( (*(*it)->getPoints()->begin()).x());
-        p.setY( (*(*it)->getPoints()->begin()).y());
-        p.setAlt( (*(*it)->getPoints()->begin()).getAlt());
-        p.setSpeed( (*(*it)->getPoints()->begin()).getSpeed());
-        curPoints->append( p );
-    }
-    lastInCurRoute = new QList<QList<RoutePoint>::iterator>();
-    it = objects->begin();
-    for( it ; it != objects->end() ; it++ )
-    {
-        lastInCurRoute->append((*it)->getPoints()->begin());
+        simObjects[i].obj = (*it);
+        simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
+        simObjects[i].curPoint = (*(*it)->getPoints()->begin());
+        double angle = atan2( ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000)
+                , ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000 ) );
+        simObjects[i].vX0 = (*simObjects[i].lastInCurRoute).getSpeed()*cos(angle);
+        simObjects[i].vY0 = (*simObjects[i].lastInCurRoute).getSpeed()*sin(angle);
+
+        simObjects[i].aX = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*cos(angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*cos(angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000) /2;
+        simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
+        simObjects[i].complete = false;
+        simObjects[i].timeCounter = 0;
     }
 
 
@@ -43,45 +47,44 @@ void Simulation::paintEvent(QPaintEvent *event)
     pen->setColor(Qt::black);
     painter.setPen(*pen);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.drawEllipse(QPoint(500,350),300,300);
-    painter.drawEllipse(QPoint(500,350),200,200);
-    painter.drawEllipse(QPoint(500,350),100,100);
-    painter.drawLine(500,50,500,650);
-    painter.drawLine(200,350,800,350);
+    painter.drawEllipse(QPoint(500,500),400,400);
+    painter.drawEllipse(QPoint(500,500),300,300);
+    painter.drawEllipse(QPoint(500,500),200,200);
+    painter.drawEllipse(QPoint(500,500),100,100);
+    painter.drawLine(500,100,500,900);
+    painter.drawLine(100,500,900,500);
     pen->setWidth(1);
     painter.setPen(*pen);
-    painter.drawEllipse(QPoint(500,350),250,250);
-    painter.drawEllipse(QPoint(500,350),150,150);
-    painter.drawEllipse(QPoint(500,350),50,50);
+    painter.drawEllipse(QPoint(500,500),350,350);
+    painter.drawEllipse(QPoint(500,500),250,250);
+    painter.drawEllipse(QPoint(500,500),150,150);
+    painter.drawEllipse(QPoint(500,500),50,50);
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);
     font->setBold(false);
     painter.setFont(*font);
-    QList<MapObj*>::iterator it = objects->begin();
-    QList<QList<RoutePoint>::iterator>::iterator itL = lastInCurRoute->begin();
-    QList<RoutePoint>::iterator itCur = curPoints->begin();
-    for( it,itL,itCur ; it != objects->end() ; it++,itL++,itCur++ )
+    for( int i = 0 ; i < objCount ; i++ )
     {
         pen->setWidth(2);
-        if( (*it)->getAsseccory() == ours )
+        if( simObjects[i].obj->getAsseccory() == ours )
         {
             pen->setColor(Qt::blue);
             brush->setColor(Qt::blue);
         }
-        if( (*it)->getAsseccory() == alien )
+        if( simObjects[i].obj->getAsseccory() == alien )
         {
             pen->setColor(Qt::red);
             brush->setColor(Qt::red);
         }
         painter.setPen(*pen);
         painter.setBrush(*brush);
-        QList<RoutePoint>::iterator itC = (*it)->getPoints()->begin();
-        for( itC ; itC != (*it)->getPoints()->end() ; itC++ )
+        QList<RoutePoint>::iterator itC = simObjects[i].obj->getPoints()->begin();
+        for( itC ; itC != simObjects[i].obj->getPoints()->end() ; itC++ )
         {
-            if( itC != (*itL) )
+            if( itC != simObjects[i].lastInCurRoute )
             {
-                if( itC+1 != (*it)->getPoints()->end())
+                if( itC+1 != simObjects[i].obj->getPoints()->end())
                 {
                     from = (*itC);
                     to = (*(itC+1));
@@ -94,7 +97,7 @@ void Simulation::paintEvent(QPaintEvent *event)
             }
         }
         from = (*itC);
-        to = (*itCur);
+        to = simObjects[i].curPoint;
         painter.drawLine(from,to);
     }
 
@@ -103,7 +106,6 @@ void Simulation::paintEvent(QPaintEvent *event)
 void Simulation::start()
 {
     timeElapsed = new QTime();
-    timeCounter = 0;
     ptimer->start();
 }
 
@@ -114,26 +116,81 @@ void Simulation::pause()
 
 void Simulation::stop()
 {
-
+    ptimer->stop();
+    delete ptimer;
 }
 
 void Simulation::updateSimulation()
 {
-    qreal dSpeedX, dSpeedY;
-    qreal dAltX, dAltY;
-    qreal dX, dY;
-    qreal aX, aY;
-    double angle;
-
-    QList<RoutePoint>::iterator it = curPoints->begin();
-    QList<QList<RoutePoint>::iterator>::iterator itL = lastInCurRoute->begin();
-    for( it,itL ; it != curPoints->end() ; it++,itL++ )
+    bool leftBoundX, rigthBoundX;
+    bool leftBoundY, rigthBoundY;
+    leftBoundX = rigthBoundX = leftBoundY = rigthBoundY = false;
+    bool trainEnd = true;
+    for( int i = 0 ; i < objCount ; i++ )
     {
-        aX = 10;
-        aY = 10;
-        (*it).setX( (*itL)->x() + 10*timeCounter*0.04 );
-        (*it).setY( (*itL)->y() + 10*timeCounter*0.04 );
+        if( simObjects[i].complete == false )
+        {
+            trainEnd = false;
+            simObjects[i].curPoint.setX( ((*simObjects[i].lastInCurRoute).x()*1000 + simObjects[i].vX0 * simObjects[i].timeCounter*0.04 +
+                                         simObjects[i].aX * pow( simObjects[i].timeCounter*0.04, 2 ) / 2)/1000 );
+            simObjects[i].curPoint.setY( ((*simObjects[i].lastInCurRoute).y()*1000 + simObjects[i].vY0 * simObjects[i].timeCounter*0.04 +
+                                         simObjects[i].aY * pow( simObjects[i].timeCounter*0.04, 2 ) / 2)/1000 );
+
+
+            if( simObjects[i].vX0 < 0 && simObjects[i].curPoint.x() < (*(simObjects[i].lastInCurRoute+1)).x() )
+            {
+                leftBoundX = true;
+            }
+
+            if( simObjects[i].vX0 > 0 && simObjects[i].curPoint.x() > (*(simObjects[i].lastInCurRoute+1)).x() )
+            {
+                rigthBoundX = true;
+            }
+
+            if( simObjects[i].vY0 < 0 && simObjects[i].curPoint.y() < (*(simObjects[i].lastInCurRoute+1)).y() )
+            {
+                leftBoundY = true;
+            }
+
+            if( simObjects[i].vX0 > 0 && simObjects[i].curPoint.y() > (*(simObjects[i].lastInCurRoute+1)).y() )
+            {
+                rigthBoundY = true;
+            }
+
+            if( (leftBoundX || rigthBoundX || simObjects[i].vX0 == 0) && (leftBoundX || rigthBoundX || simObjects[i].vY0 == 0) )
+            {
+                simObjects[i].lastInCurRoute++;
+                if( (simObjects[i].lastInCurRoute+1) != simObjects[i].obj->getPoints()->end() )
+                {
+                    simObjects[i].curPoint = (*simObjects[i].lastInCurRoute);
+                    double angle = atan2( ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000)
+                            , ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000 ) );
+                    simObjects[i].vX0 = (*simObjects[i].lastInCurRoute).getSpeed()*cos(angle);
+                    simObjects[i].vY0 = (*simObjects[i].lastInCurRoute).getSpeed()*sin(angle);
+
+                    simObjects[i].aX = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*cos(angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*cos(angle), 2 )) /
+                            ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000) /2;
+                    simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(angle), 2 )) /
+                            ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
+                    simObjects[i].timeCounter = 0;
+                }
+                else
+                {
+                    simObjects[i].complete = true;
+                }
+            }
+            else
+            {
+                simObjects[i].timeCounter++;
+            }
+        }
     }
-    timeCounter++;
-    update();
+    if( trainEnd == false )
+    {
+        update();
+    }
+    else
+    {
+        stop();
+    }
 }

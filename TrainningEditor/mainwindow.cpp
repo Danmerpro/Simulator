@@ -22,7 +22,13 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     scene = new TrainningScene( objects, opt, this );
     rtMenu = new RoutesMenu (objects,this);
     editMenu = new EditRoutesMenu(this);
-    sceneLayout->addWidget(scene);
+    scrollScene = new QScrollArea();
+    scrollSim = new QScrollArea();
+    scrollScene->setBackgroundRole(QPalette::Midlight);
+    scrollScene->setWidget(scene);
+    sceneLayout->addWidget(scrollScene);
+    sceneLayout->addWidget(scrollSim);
+    scrollSim->hide();
     menuLayout->addWidget(rtMenu);
     menuLayout->addWidget(editMenu);
     rigthLayout->addLayout(menuLayout);
@@ -366,12 +372,12 @@ void MainWindow::trainingModified()
 
 void  MainWindow::startTraining()
 {
-    sceneLayout->removeWidget( scene );
-    scene->hide();
+    scrollScene->hide();
     if( sim != NULL)
         delete sim;
     sim = new Simulation( objects );
-    sceneLayout->addWidget(sim);
+    scrollSim->setWidget(sim);
+    scrollSim->show();
     sim->start();
 }
 

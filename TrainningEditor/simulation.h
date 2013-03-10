@@ -10,6 +10,7 @@
 #include <QBrush>
 #include <Qpen>
 #include <QLineF>
+#include <QPolygonF>
 #include <math.h>
 #include <iostream>
 #include "mapobj.h"
@@ -27,6 +28,7 @@ typedef struct
     double vY0;
     int timeCounter;
     bool complete;
+    double angle;
 }SIM_OBJ;
 
 class Simulation : public QWidget

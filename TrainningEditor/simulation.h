@@ -40,6 +40,7 @@ private:
     SIM_OBJ* simObjects;
     int objCount;
     QTimer *ptimer;
+    QTimer *timerForMenu;
     QTime *timeElapsed;
     QPen* pen;
     QBrush* brush;
@@ -51,6 +52,7 @@ protected:
     void paintEvent(QPaintEvent *event);
     
 signals:
+    void myTimeout();
     
 public slots:
     void start();

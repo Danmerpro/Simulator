@@ -5,5 +5,11 @@
         <file>arrow_move.png</file>
         <file>cursor_arrow.png</file>
         <file>cursor_drag_hand.png</file>
+        <file>pause.png</file>
+        <file>play.png</file>
+        <file>stop.png</file>
+        <file>play (3).png</file>
+        <file>close_box_red.png</file>
+        <file>pause (3).png</file>
     </qresource>
 </RCC>

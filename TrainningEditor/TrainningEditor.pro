@@ -9,7 +9,8 @@ HEADERS += \
     routeslist.h \
     optionsmenu.h \
     options.h \
-    simulation.h
+    simulation.h \
+    simulationmenu.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -22,7 +23,8 @@ SOURCES += \
     routeslist.cpp \
     optionsmenu.cpp \
     options.cpp \
-    simulation.cpp
+    simulation.cpp \
+    simulationmenu.cpp
 
 RESOURCES += \
     Resources/MapResources.qrc

@@ -5,6 +5,9 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
 {
     this->setFixedSize(1000,1000);
 
+    timerForMenu = new QTimer();
+    timerForMenu->setInterval(1000);
+
     ptimer = new QTimer();
     ptimer->setInterval(40);
 
@@ -33,6 +36,7 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
 
 
     connect(ptimer, SIGNAL(timeout()), this, SLOT(updateSimulation()));
+    connect(timerForMenu, SIGNAL(timeout()), this, SIGNAL(myTimeout()));
 }
 
 void Simulation::paintEvent(QPaintEvent *event)
@@ -148,18 +152,37 @@ void Simulation::paintEvent(QPaintEvent *event)
 void Simulation::start()
 {
     timeElapsed = new QTime();
+    timerForMenu->start();
     ptimer->start();
 }
 
 void Simulation::pause()
 {
-
+    timerForMenu->stop();
+    ptimer->stop();
 }
 
 void Simulation::stop()
 {
+    timerForMenu->stop();
     ptimer->stop();
-    delete ptimer;
+    for( int i = 0 ; i < objCount ; i++ )
+    {
+        simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
+        simObjects[i].curPoint = *(simObjects[i].obj->getPoints()->begin());
+        simObjects[i].angle = atan2( ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000)
+                , ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000 ) );
+        simObjects[i].vX0 = (*simObjects[i].lastInCurRoute).getSpeed()*cos(simObjects[i].angle);
+        simObjects[i].vY0 = (*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle);
+
+        simObjects[i].aX = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*cos(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*cos(simObjects[i].angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000) /2;
+        simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
+        simObjects[i].complete = false;
+        simObjects[i].timeCounter = 0;
+    }
+    update();
 }
 
 void Simulation::updateSimulation()

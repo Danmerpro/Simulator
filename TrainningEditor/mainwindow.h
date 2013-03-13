@@ -17,6 +17,7 @@
 #include "routesmenu.h"
 #include "trainningscene.h"
 #include "editroutesmenu.h"
+#include "simulationmenu.h"
 #include "options.h"
 #include "optionsmenu.h"
 #include "simulation.h"
@@ -36,6 +37,7 @@ private:
     Simulation* sim;
     RoutesMenu* rtMenu;
     EditRoutesMenu* editMenu;
+    SimulationMenu* simMenu;
     QList<MapObj*> *objects;
     Options* opt;
     OptionsMenu* optMenu;

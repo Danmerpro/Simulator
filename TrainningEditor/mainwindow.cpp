@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     scene = new TrainningScene( objects, opt, this );
     rtMenu = new RoutesMenu (objects,this);
     editMenu = new EditRoutesMenu(this);
+    simMenu = new SimulationMenu(this);
     scrollScene = new QScrollArea();
     scrollSim = new QScrollArea();
     scrollScene->setBackgroundRole(QPalette::Midlight);
@@ -31,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     scrollSim->hide();
     menuLayout->addWidget(rtMenu);
     menuLayout->addWidget(editMenu);
+    menuLayout->addWidget(simMenu);
     rigthLayout->addLayout(menuLayout);
     rigthLayout->addWidget(optMenu);
     mainLayout->addLayout(sceneLayout);
@@ -65,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(optMenu, SIGNAL(updateScene()), scene, SLOT(update()));
 
     editMenu->hide();
+    simMenu->hide();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *)
@@ -372,13 +375,18 @@ void MainWindow::trainingModified()
 
 void  MainWindow::startTraining()
 {
+    rtMenu->hide();
+    simMenu->show();
     scrollScene->hide();
     if( sim != NULL)
         delete sim;
     sim = new Simulation( objects );
     scrollSim->setWidget(sim);
     scrollSim->show();
-    sim->start();
+    connect(sim, SIGNAL(myTimeout()), simMenu, SLOT(updateTimeElapsed()));
+    connect(simMenu, SIGNAL(playClicked()), sim, SLOT(start()));
+    connect(simMenu, SIGNAL(pauseClicked()), sim, SLOT(pause()));
+    connect(simMenu, SIGNAL(stopClicked()), sim, SLOT(stop()));
 }
 
 

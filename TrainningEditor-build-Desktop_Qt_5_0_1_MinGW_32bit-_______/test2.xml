@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes_data_base>
+    <route asseccory="ours" start_time="00:00:00">
+        <point speed="454.000000" alt="44.000000" x="888.000000" y="234.000000"/>
+        <point speed="0.000000" alt="0.000000" x="202.000000" y="239.000000"/>
+    </route>
+    <route asseccory="ours" start_time="00:00:00">
+        <point speed="60.000000" alt="606.000000" x="537.000000" y="50.000000"/>
+        <point speed="0.000000" alt="0.000000" x="541.000000" y="553.000000"/>
+    </route>
+</routes_data_base>

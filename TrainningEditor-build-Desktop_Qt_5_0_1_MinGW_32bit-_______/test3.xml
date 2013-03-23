@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes_data_base>
+    <route asseccory="ours" start_time="00:00:00">
+        <point speed="8333.333333" alt="0.000000" x="500.000000" y="100.000000"/>
+        <point speed="8333.333333" alt="0.000000" x="900.000000" y="500.000000"/>
+    </route>
+    <route asseccory="alien" start_time="00:00:00">
+        <point speed="8333.333333" alt="0.000000" x="500.000000" y="499.000000"/>
+        <point speed="8333.333333" alt="0.000000" x="789.000000" y="222.000000"/>
+    </route>
+    <route asseccory="ours" start_time="00:00:00">
+        <point speed="8333.333333" alt="0.000000" x="109.000000" y="415.000000"/>
+        <point speed="8333.333333" alt="0.000000" x="500.000000" y="417.000000"/>
+    </route>
+</routes_data_base>

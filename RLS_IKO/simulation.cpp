@@ -3,6 +3,11 @@
 Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     QWidget(parent)
 {
+    QBrush bgrBrush(Qt::black);
+    QPalette plt = this->palette();
+    plt.setBrush(QPalette::Background, bgrBrush);
+    setPalette(plt);
+
     this->setFixedSize(1000,1000);
 
     timerForMenu = new QTimer();
@@ -13,6 +18,9 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
 
     objCount = _objects->size();
     simObjects = new SIM_OBJ[objCount];
+
+    radarLine = new QLineF();
+    radarAngle = 0;
 
     int i = 0;
     QList<MapObj *>::Iterator it = _objects->begin();
@@ -39,8 +47,344 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     connect(timerForMenu, SIGNAL(timeout()), this, SIGNAL(myTimeout()));
 }
 
+void Simulation::setpixelVu( QPainter& painter, int x, int y, double alpha)
+ {
+    QColor pColor(Qt::green);
+    pColor.setAlpha(255*alpha);
+    pen->setColor(pColor);
+    painter.setPen(*pen);
+//	SetPixel(x, y,RGB(250*(1-alpha),250*(1-alpha),250));
+    painter.drawPoint(x, y);
+ }
+
+void Simulation::DrawCirclPart(QPainter& painter,double cx,double cy,double r, double angle )
+ {
+    int x;
+    int y;
+    double t;
+    double d;
+    int j;
+    int kx;
+    int ky;
+    int lastx;
+    double curAngle;
+
+    x = r;
+    lastx = r;
+    y = 0;
+    t = 0;
+    for( j = 0; j <= 3; j++ )
+    {
+        kx = j % 2 * 2 - 1;
+        ky = j / 2 % 2  *2 - 1;
+
+        curAngle = atan2(y, x) * 180 / M_PI;
+        if( curAngle >= 0 && curAngle <= 10 )
+        {
+            setpixelVu(painter, kx * x + cx, ky * y + cy, double(1));
+            setpixelVu(painter, kx * y + cx, ky * x + cy, double(1));
+        }
+        else
+        {
+            setpixelVu(painter, kx * x + cx, ky * y + cy, double(0));
+            setpixelVu(painter, kx * y + cx, ky * x + cy, double(0));
+        }
+    }
+    while( x > y )
+    {
+        y = y + 1;
+        d = ceil(sqrt(double( r * r - y * y ))) - sqrt(double( r * r - y * y ));
+        if( d < t )
+        {
+            x = x - 1;
+        }
+        if( x < y )
+        {
+            break;
+        }
+        if( x == y && lastx == x )
+        {
+            break;
+        }
+        for( j = 0; j <= 2; j++ )
+        {
+            kx = j % 2 * 2 - 1;
+            ky = j / 2 % 2 * 2 - 1;
+            curAngle = atan2(y, x) * 180 / M_PI;
+        //    printf("angle = %f\n", curAngle);
+            if( curAngle >= 0 && curAngle <= 10 )
+            {
+                setpixelVu(painter, kx * x + cx, ky * y + cy, 1 - d);
+                setpixelVu(painter, kx * y + cx, ky * x + cy, 1 - d);
+            }
+            else
+            {
+                setpixelVu(painter, kx * x + cx, ky * y + cy, 0);
+                setpixelVu(painter, kx * y + cx, ky * x + cy, 0);
+            }
+            if( x-1 >= y )
+            {
+                curAngle = atan2(y, x) * 180 / M_PI;
+        //        printf("angle = %f\n", curAngle);
+                if( curAngle >= 0 && curAngle <= 30 )
+                {
+                    setpixelVu(painter, kx * (x - 1) + cx, ky * y + cy, d);
+                    setpixelVu(painter, kx * y + cx, ky * (x - 1) + cy, d);
+                }
+                else
+                {
+                    setpixelVu(painter, kx * (x - 1) + cx, ky * y + cy, 0);
+                    setpixelVu(painter, kx * y + cx, ky * (x - 1) + cy, 0);
+                }
+            }
+        }
+        t = d;
+        lastx = x;
+    }
+ }
+
+//Целая часть числа
+int Simulation::IPart(float x)
+{
+    return (int)x;
+}
+
+//дробная часть числа
+float Simulation::FPart(float x)
+{
+    while (x >= 0)
+        x--;
+    x++;
+    return x;
+}
+
+void Simulation::DrawWuCircle(QPainter& painter, int _x, int _y, int radius, double angle )
+{
+    double curAngle;
+    //Установка пикселов, лежащих на осях системы координат с началом в центре
+    QColor pColor(Qt::green);
+    pColor.setAlpha(255);
+    pen->setColor(pColor);
+    painter.setPen(*pen);
+    painter.drawPoint(_x + radius, _y);
+    painter.drawPoint(_x, _y + radius);
+    painter.drawPoint(_x - radius + 1, _y);
+    painter.drawPoint(_x, _y - radius + 1);
+ //   printf("%f\n", angle );
+
+    float iy = 0;
+    for (int x = 0; x <= radius * cos(M_PI / 4); x++)
+    {
+        //Вычисление точного значения координаты Y
+        iy = (float)sqrt(radius * radius - x * x);
+
+        //IV квадрант, Y
+        curAngle = atan2(IPart(iy), -x);
+        if( curAngle - M_PI/2 <= angle - M_PI && curAngle + M_PI/2  >= angle - M_PI/2)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - x, _y + IPart(iy));
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI )
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - x, _y + IPart(iy) + 1);
+        //I квадрант, Y
+        curAngle = atan2(IPart(iy), x);
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + x, _y + IPart(iy));
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + x, _y + IPart(iy) + 1);
+        //I квадрант, X
+        curAngle = atan2(IPart(iy), x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + IPart(iy), _y + x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + IPart(iy) + 1, _y + x);
+        //II квадрант, X
+        curAngle = atan2(IPart(iy), -x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + IPart(iy), _y - x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + IPart(iy) + 1, _y - x);
+
+        //С помощью инкремента устраняется ошибка смещения на 1 пиксел*/
+        x++;
+        //II квадрант, Y
+        curAngle = atan2(-IPart(iy), x);
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + x, _y - IPart(iy));
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x + x, _y - IPart(iy) + 1);
+        //III квадрант, Y
+        curAngle = atan2(-IPart(iy), -x);
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - x, _y - IPart(iy));
+        if( curAngle <= angle - M_PI / 2 && curAngle >= angle - M_PI)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - x, _y - IPart(iy) + 1);
+        //III квадрант, X
+        curAngle = atan2(-IPart(iy), -x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - IPart(iy), _y - x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle)
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - IPart(iy) + 1, _y - x);
+        //IV квадрант, X
+        curAngle = atan2(-IPart(iy), x);
+        printf( "angle = %f\n", (-angle) * 180 / M_PI );
+        printf( "curAngle2 = %f\n", curAngle * 180 / M_PI );
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle )
+        {
+            pColor.setAlpha((int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - IPart(iy), _y + x);
+        if( curAngle - M_PI <= -angle + (M_PI / 2) && curAngle - M_PI >= -angle  )
+        {
+            pColor.setAlpha(255 - (int)(FPart(iy) * 255));
+        }
+        else
+        {
+            pColor.setAlpha(0);
+        }
+        pen->setColor(pColor);
+        painter.setPen(*pen);
+        painter.drawPoint(_x - IPart(iy) + 1, _y + x);
+        //Возврат значения
+        x--;
+    }
+}
+
 void Simulation::paintEvent(QPaintEvent *event)
 {
+    qreal rX0 = 500;
+    qreal rY0 = 500;
+    qreal rdLineLen = 400;
     QPainter painter(this);
     RoutePoint from;
     RoutePoint to;
@@ -48,21 +392,166 @@ void Simulation::paintEvent(QPaintEvent *event)
     pen = new QPen();
     brush = new QBrush(Qt::SolidPattern);
     pen->setWidth(2);
-    pen->setColor(Qt::black);
+    pen->setColor(Qt::green);
     painter.setPen(*pen);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.drawEllipse(QPoint(500,500),400,400);
-    painter.drawEllipse(QPoint(500,500),300,300);
-    painter.drawEllipse(QPoint(500,500),200,200);
-    painter.drawEllipse(QPoint(500,500),100,100);
-    painter.drawLine(500,100,500,900);
-    painter.drawLine(100,500,900,500);
+
+    radarLine->setP1(QPointF(rX0,rY0));
+    radarLine->setP2(QPointF(rX0 + (rdLineLen * sin(radarAngle)),rY0+(-rdLineLen * cos(radarAngle))));
+
+    painter.drawLine(*radarLine);
+
+ /*   DrawWuCircle(painter, 500.0, 500.0, 400.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 350.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 300.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 250.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 200.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 150.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 100.0, radarAngle );
+    DrawWuCircle(painter, 500.0, 500.0, 50.0, radarAngle );*/
+
+    QColor arcColor(Qt::green);
+    arcColor.setAlpha(255);
+    pen->setColor(arcColor);
+    painter.setPen(*pen);
+
+    double dAngle = 0;
+    painter.drawArc( 100, 100, 800, 800, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 150, 150, 700, 700, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 200, 200, 600, 600, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 250, 250, 500, 500, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 300, 300, 400, 400, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 350, 350, 300, 300, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 400, 400, 200, 200, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    painter.drawArc( 450, 450, 100, 100, -(radarAngle * 180 / M_PI - 90 ) * 16 , 180 * 16 );
+    for( int i = 200 ; i > 0 ; i -= 5 )
+    {
+        arcColor.setAlpha(i);
+        pen->setColor(arcColor);
+        pen->setWidth(1);
+        painter.setPen(*pen);
+        painter.drawArc( 100, 100, 800, 800, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 150, 150, 700, 700, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 200, 200, 600, 600, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 250, 250, 500, 500, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 300, 300, 400, 400, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 350, 350, 300, 300, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 400, 400, 200, 200, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        painter.drawArc( 450, 450, 100, 100, -(radarAngle * 180 / M_PI + 90 ) * 16 , dAngle * 16 );
+        dAngle += 2;
+    }
+
+    QColor lineColor(Qt::green);
+    pen->setColor(lineColor);
+    pen->setWidth(2);
+    painter.setPen(*pen);
+
+    if( radarAngle < M_PI && radarAngle >= 0)
+    {
+        lineColor.setAlpha(255 * ((M_PI - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(0)), rY0 + (-rdLineLen * cos(0)));
+    }
+    if( radarAngle < 5 * M_PI / 4 && radarAngle >= (M_PI / 4))
+    {
+        lineColor.setAlpha(255 * ((5 * M_PI / 4 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(M_PI / 4)), rY0 + (-rdLineLen * cos(M_PI / 4)));
+    }
+    if( radarAngle < 3 * M_PI / 2 && radarAngle >= (M_PI / 2))
+    {
+        lineColor.setAlpha(255 * ((3 * M_PI / 2 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(M_PI / 2)), rY0 + (-rdLineLen * cos(M_PI / 2)));
+    }
+    if( radarAngle < 7 * M_PI / 4 && radarAngle >= (3 * M_PI / 4))
+    {
+        lineColor.setAlpha(255 * ((7 * M_PI / 4 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(3 * M_PI / 4)), rY0 + (-rdLineLen * cos(3 * M_PI / 4)));
+    }
+    if( radarAngle < 2 * M_PI  && radarAngle >= M_PI)
+    {
+        lineColor.setAlpha(255 * ((2 * M_PI - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(M_PI)), rY0 + (-rdLineLen * cos(M_PI)));
+    }
+    if( (radarAngle < 2 * M_PI && radarAngle >= (5 * M_PI / 4)))
+    {
+        lineColor.setAlpha(255 * (((9 * M_PI / 4) - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(5 * M_PI / 4)), rY0 + (-rdLineLen * cos(5 * M_PI / 4)));
+    }
+    if( radarAngle < M_PI / 4 && radarAngle >= 0)
+    {
+        lineColor.setAlpha(255 * ( (M_PI / 4 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(5 * M_PI / 4)), rY0 + (-rdLineLen * cos(5 * M_PI / 4)));
+    }
+    if( radarAngle < 2 * M_PI && radarAngle >= (3 * M_PI / 2))
+    {
+        lineColor.setAlpha(255 * (((10 * M_PI / 4) - radarAngle )/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(3 * M_PI / 2)), rY0 + (-rdLineLen * cos(3 * M_PI / 2)));
+    }
+    if( radarAngle < M_PI / 2 && radarAngle >= 0)
+    {
+        lineColor.setAlpha(255 * ( (M_PI / 2 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(3 * M_PI / 2)), rY0 + (-rdLineLen * cos(3 * M_PI / 2)));
+    }
+    if( radarAngle < (2 * M_PI) && radarAngle >= (7 * M_PI / 4))
+    {
+        lineColor.setAlpha(255 * (((13 * M_PI / 4) - radarAngle )/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(7 * M_PI / 4)), rY0 + (-rdLineLen * cos(7 * M_PI / 4)));
+    }
+    if( radarAngle < 3 * M_PI / 4 && radarAngle >= 0)
+    {
+        lineColor.setAlpha(255 * ( (3 * M_PI / 4 - radarAngle)/M_PI));
+        pen->setColor(lineColor);
+        pen->setWidth(2);
+        painter.setPen(*pen);
+        painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(7 * M_PI / 4)), rY0 + (-rdLineLen * cos(7 * M_PI / 4)));
+    }
+
+    radarAngle += 0.0251;
+    if( radarAngle >= 2 * M_PI )
+        radarAngle = 0;
+
+ /*   int pointsAmount = 1000;
+
+    pen->setWidth(1);
+    pen->setColor(Qt::green);
+    painter.setPen(*pen);
+
+    for( int i = 0 ; i < pointsAmount ; i++ )
+    {
+        painter.drawPoint( 500 + (2 * (rand() % 2) - 1) * (rand() % 400), 500 + (2 * (rand() % 2) - 1) * (rand() % 400) );
+    }*/
+
     pen->setWidth(1);
     painter.setPen(*pen);
-    painter.drawEllipse(QPoint(500,500),350,350);
-    painter.drawEllipse(QPoint(500,500),250,250);
-    painter.drawEllipse(QPoint(500,500),150,150);
-    painter.drawEllipse(QPoint(500,500),50,50);
     pen->setWidth(2);
     pen->setColor(Qt::green);
     painter.setPen(*pen);

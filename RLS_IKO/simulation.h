@@ -12,6 +12,7 @@
 #include <QLineF>
 #include <QPolygonF>
 #include <math.h>
+#include <QPalette>
 #include <iostream>
 #include "mapobj.h"
 #include "routepoint.h"
@@ -42,9 +43,17 @@ private:
     QTime *timeElapsed;
     QPen* pen;
     QBrush* brush;
+    QLineF* radarLine;
+    double radarAngle;
 
 public:
     explicit Simulation(QList<MapObj*> *_objects, QWidget *parent = 0);
+    void DrawCirclPart(QPainter& painter,double cx,double cy,double r, double angle );
+    void setpixelVu( QPainter& painter, int x, int y, double alpha);
+
+    int IPart(float x);
+    float FPart(float x);
+    void DrawWuCircle(QPainter& painter, int _x, int _y, int radius, double angle);
 
 protected:
     void paintEvent(QPaintEvent *event);

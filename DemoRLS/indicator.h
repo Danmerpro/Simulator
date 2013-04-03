@@ -1,7 +1,7 @@
-#ifndef INDICATOR_H
+﻿#ifndef INDICATOR_H
 #define INDICATOR_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QTimer>
 
 class Indicator : public QWidget

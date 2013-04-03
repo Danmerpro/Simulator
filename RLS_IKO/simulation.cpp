@@ -399,7 +399,7 @@ void Simulation::paintEvent(QPaintEvent *event)
     radarLine->setP1(QPointF(rX0,rY0));
     radarLine->setP2(QPointF(rX0 + (rdLineLen * sin(radarAngle)),rY0+(-rdLineLen * cos(radarAngle))));
 
-    painter.drawLine(*radarLine);
+//    painter.drawLine(*radarLine);
 
  /*   DrawWuCircle(painter, 500.0, 500.0, 400.0, radarAngle );
     DrawWuCircle(painter, 500.0, 500.0, 350.0, radarAngle );
@@ -535,11 +535,7 @@ void Simulation::paintEvent(QPaintEvent *event)
         painter.drawLine(rX0, rY0, rX0 + (rdLineLen * sin(7 * M_PI / 4)), rY0 + (-rdLineLen * cos(7 * M_PI / 4)));
     }
 
-    radarAngle += 0.0251;
-    if( radarAngle >= 2 * M_PI )
-        radarAngle = 0;
-
- /*   int pointsAmount = 1000;
+    int pointsAmount = 1000;
 
     pen->setWidth(1);
     pen->setColor(Qt::green);
@@ -547,8 +543,24 @@ void Simulation::paintEvent(QPaintEvent *event)
 
     for( int i = 0 ; i < pointsAmount ; i++ )
     {
-        painter.drawPoint( 500 + (2 * (rand() % 2) - 1) * (rand() % 400), 500 + (2 * (rand() % 2) - 1) * (rand() % 400) );
-    }*/
+        double pointAngle = radarAngle + log((double)rand() / RAND_MAX) / 1.5;
+        int pointD = rand() % 400;
+        painter.drawPoint(rX0 + (pointD * sin(pointAngle)), rY0 + (-pointD * cos(pointAngle)));
+    }
+
+    pointsAmount = 200;
+
+    for( int i = 0 ; i < pointsAmount ; i++ )
+    {
+        int pointD = rand() % 400;
+        painter.drawPoint(rX0 + (pointD * sin(radarAngle)), rY0 + (-pointD * cos(radarAngle)));
+        painter.drawPoint(rX0 + (pointD * sin(radarAngle - 0.005)), rY0 + (-pointD * cos(radarAngle - 0.005)));
+        painter.drawPoint(rX0 + (pointD * sin(radarAngle - 0.01)), rY0 + (-pointD * cos(radarAngle - 0.01)));
+    }
+
+    radarAngle += 0.0251;
+    if( radarAngle >= 2 * M_PI )
+        radarAngle = 0;
 
     pen->setWidth(1);
     painter.setPen(*pen);

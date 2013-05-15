@@ -10,6 +10,9 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
 
     this->setFixedSize(1000,1000);
 
+    ScreenTemplate = new QImage(1000, 1000, QImage::Format_RGB32);
+    ScreeenBuffer = new QImage( 1000, 1000, QImage::Format_RGB32);
+
     timerForMenu = new QTimer();
     timerForMenu->setInterval(1000);
 
@@ -20,7 +23,7 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     simObjects = new SIM_OBJ[objCount];
 
     radarLine = new QLineF();
-    radarAngle = 0;
+    radarAngle = -M_PI / 2;
 
     int i = 0;
     QList<MapObj *>::Iterator it = _objects->begin();
@@ -45,6 +48,31 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
 
     connect(ptimer, SIGNAL(timeout()), this, SLOT(updateSimulation()));
     connect(timerForMenu, SIGNAL(timeout()), this, SIGNAL(myTimeout()));
+
+    pen = new QPen();
+
+    InitScreenTemplate();
+}
+
+void Simulation::InitScreenTemplate()
+{
+    qreal rX0 = 500;
+    qreal rY0 = 500;
+    qreal rdLineLen = 400;
+    QPainter painter(ScreenTemplate);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QColor pColor(Qt::green);
+    pen->setColor(pColor);
+    painter.setPen(*pen);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen, rdLineLen);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 50, rdLineLen - 50);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 100, rdLineLen - 100);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 150, rdLineLen - 150);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 200, rdLineLen - 200);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 250, rdLineLen - 250);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 300, rdLineLen - 300);
+    painter.drawEllipse( QPointF(rX0, rY0), rdLineLen - 350, rdLineLen - 350);
+
 }
 
 void Simulation::setpixelVu( QPainter& painter, int x, int y, double alpha)
@@ -379,6 +407,43 @@ void Simulation::DrawWuCircle(QPainter& painter, int _x, int _y, int radius, dou
         x--;
     }
 }
+/*
+void Simulation::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    double curAngle;
+    qreal rX0 = 500;
+    qreal rY0 = 500;
+    qreal rdLineLen = 400;
+    QRgb pix;
+    FILE * log = fopen("log.txt", "wt");
+
+
+    for( int i = 0 ; i < ScreenTemplate->height() ; i++ )
+    {
+        for( int j = 0 ; j < ScreenTemplate->width() ; j++ )
+        {
+            if( (pix = ScreenTemplate->pixel( j, i )) != qRgb( 255, 255, 255 ) )
+            {
+                curAngle = atan2( i - rY0, j - rX0 );
+                if( curAngle <= radarAngle && curAngle >= radarAngle - M_PI )
+                {
+                    ScreeenBuffer->setPixel( j, i, qRgb( 0, qGreen(pix) * (1 - (radarAngle - curAngle) / M_PI) , 0) );
+                }
+                else
+                {
+                    ScreeenBuffer->setPixel( j, i, qRgb( 0, 0, 0 ) );
+                }
+            }
+        }
+    }
+
+    painter.drawImage( 0, 0, *ScreeenBuffer );
+    radarAngle += 0.0251;
+    if( radarAngle >= 2 * M_PI )
+        radarAngle = 0;
+}*/
+
 
 void Simulation::paintEvent(QPaintEvent *event)
 {
@@ -389,7 +454,6 @@ void Simulation::paintEvent(QPaintEvent *event)
     RoutePoint from;
     RoutePoint to;
     QFont* font = new QFont();
-    pen = new QPen();
     brush = new QBrush(Qt::SolidPattern);
     pen->setWidth(2);
     pen->setColor(Qt::green);

@@ -6,12 +6,15 @@ SimulationMenu::SimulationMenu(QWidget *parent) :
     QVBoxLayout* mainLayout = new QVBoxLayout();
     QHBoxLayout* timeLayout = new QHBoxLayout();
     QHBoxLayout* butLayout = new QHBoxLayout();
+    QHBoxLayout* exitBtLayout = new QHBoxLayout();
     play = new QPushButton();
     play->setIcon(QIcon(":/Icon/play (3).png"));
     pause = new QPushButton();
     pause->setIcon(QIcon(":/Icon/pause (3).png"));
     stop = new QPushButton();
     stop->setIcon(QIcon(":/Icon/close_box_red.png"));
+    endTraining = new QPushButton();
+    endTraining->setText(tr("Выход в редактор"));
     butLayout->addWidget(play);
     butLayout->addWidget(pause);
     butLayout->addWidget(stop);
@@ -23,6 +26,9 @@ SimulationMenu::SimulationMenu(QWidget *parent) :
     mainLayout->addLayout(butLayout);
     mainLayout->addLayout(timeLayout);
     mainLayout->addStretch();
+    exitBtLayout->addStretch();
+    exitBtLayout->addWidget(endTraining);
+    mainLayout->addLayout(exitBtLayout);
     this->setLayout(mainLayout);
     this->setMinimumWidth(300);
     this->adjustSize();
@@ -30,6 +36,7 @@ SimulationMenu::SimulationMenu(QWidget *parent) :
     connect(play, SIGNAL(clicked()), this, SIGNAL(playClicked()));
     connect(pause, SIGNAL(clicked()), this, SIGNAL(pauseClicked()));
     connect(stop, SIGNAL(clicked()), this, SIGNAL(stopClicked()));
+    connect(endTraining, SIGNAL(clicked()), this, SIGNAL(exitClicked()));
     connect(stop, SIGNAL(clicked()), this, SLOT(zeroTime()));
 }
 

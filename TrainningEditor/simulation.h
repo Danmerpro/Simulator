@@ -42,6 +42,7 @@ private:
     QTimer *ptimer;
     QTimer *timerForMenu;
     QTime *timeElapsed;
+    QTime *deltaTime;
     QPen* pen;
     QBrush* brush;
 

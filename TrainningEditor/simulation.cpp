@@ -1,4 +1,5 @@
 #include "simulation.h"
+#include <iostream>
 
 Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     QWidget(parent)
@@ -151,7 +152,7 @@ void Simulation::paintEvent(QPaintEvent *event)
 
 void Simulation::start()
 {
-    timeElapsed = new QTime();
+    timeElapsed = new QTime(0, 0, 0, 0);
     timerForMenu->start();
     ptimer->start();
 }
@@ -166,6 +167,8 @@ void Simulation::stop()
 {
     timerForMenu->stop();
     ptimer->stop();
+    delete timeElapsed;
+    timeElapsed = new QTime(0, 0, 0, 0);
     for( int i = 0 ; i < objCount ; i++ )
     {
         simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
@@ -193,7 +196,7 @@ void Simulation::updateSimulation()
     bool trainEnd = true;
     for( int i = 0 ; i < objCount ; i++ )
     {
-        if( simObjects[i].complete == false )
+        if( simObjects[i].complete == false && *timeElapsed >= simObjects[i].obj->getStartTime() )
         {
             trainEnd = false;
             simObjects[i].curPoint.setX( ((*simObjects[i].lastInCurRoute).x()*1000 + simObjects[i].vX0 * simObjects[i].timeCounter*0.04 +
@@ -252,6 +255,7 @@ void Simulation::updateSimulation()
     }
     if( trainEnd == false )
     {
+        *timeElapsed = timeElapsed->addMSecs(40);
         update();
     }
     else

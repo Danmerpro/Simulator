@@ -66,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(editMenu, SIGNAL(updateScene()), scene, SLOT(update()));
     connect(optMenu, SIGNAL(updateScene()), scene, SLOT(update()));
 
+    connect(simMenu, SIGNAL(exitClicked()), this, SLOT(exitToEditor()));
+
     editMenu->hide();
     simMenu->hide();
 }
@@ -387,6 +389,14 @@ void  MainWindow::startTraining()
     connect(simMenu, SIGNAL(playClicked()), sim, SLOT(start()));
     connect(simMenu, SIGNAL(pauseClicked()), sim, SLOT(pause()));
     connect(simMenu, SIGNAL(stopClicked()), sim, SLOT(stop()));
+}
+
+void MainWindow::exitToEditor()
+{
+    rtMenu->show();
+    simMenu->hide();
+    scrollScene->show();
+    scrollSim->hide();
 }
 
 

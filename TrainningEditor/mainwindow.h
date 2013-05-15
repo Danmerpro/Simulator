@@ -64,6 +64,7 @@ private slots:
     void systemReinit();
     void trainingModified();
     void startTraining();
+    void exitToEditor();
 
 public:
     MainWindow(QWidget *parent = 0);

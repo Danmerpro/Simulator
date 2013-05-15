@@ -28,6 +28,7 @@ signals:
     void playClicked();
     void pauseClicked();
     void stopClicked();
+    void exitClicked();
     
 public slots:
     void updateTimeElapsed();

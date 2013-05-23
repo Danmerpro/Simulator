@@ -15,6 +15,8 @@
 #include <QPalette>
 #include <iostream>
 #include <QImage>
+#include <QPair>
+#include <QList>
 
 #include "mapobj.h"
 #include "routepoint.h"
@@ -49,19 +51,22 @@ private:
     double radarAngle;
     QImage* ScreenTemplate;
     QImage* ScreeenBuffer;
+    QPoint centerPoint;
+    int radius;
+    QList< QPair< QPointF, double> > drawnPoints;
 
 public:
     explicit Simulation(QList<MapObj*> *_objects, QWidget *parent = 0);
-    void DrawCirclPart(QPainter& painter,double cx,double cy,double r, double angle );
-    void setpixelVu( QPainter& painter, int x, int y, double alpha);
-
-    int IPart(float x);
-    float FPart(float x);
-    void DrawWuCircle(QPainter& painter, int _x, int _y, int radius, double angle);
-    void InitScreenTemplate();
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *);
+
+private:
+    void draw30degLines(QPainter &);
+    void draw10degLines(QPainter &);
+    bool checkRoutePoint(double xcheck, double ycheck, double x, double y);
+    void drawOldPoints(QPainter &);
+    void drawPoints(QPainter &);
     
 signals:
     void myTimeout();

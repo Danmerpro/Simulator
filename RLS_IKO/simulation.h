@@ -45,7 +45,6 @@ private:
     QTimer *ptimer;
     QTimer *timerForMenu;
     QTime *timeElapsed;
-    QPen* pen;
     QBrush* brush;
     QLineF* radarLine;
     double radarAngle;
@@ -53,6 +52,9 @@ private:
     QImage* ScreeenBuffer;
     QPoint centerPoint;
     int radius;
+    double accuracy;//точность обнаружения точки
+    int hordHalf;//половина длины хорды отметки о цели
+    int arcWidth; //толщина дуг отметки и опознования
     QList< QPair< QPointF, double> > drawnPoints;
 
 public:
@@ -62,11 +64,15 @@ protected:
     void paintEvent(QPaintEvent *);
 
 private:
+    void drawLenArcks(QPainter &);
     void draw30degLines(QPainter &);
     void draw10degLines(QPainter &);
     bool checkRoutePoint(double xcheck, double ycheck, double x, double y);
     void drawOldPoints(QPainter &);
     void drawPoints(QPainter &);
+    void drawRandomPoints(QPainter &);
+    void drawPoint(QPainter &, double, double, double angle, bool enemy = false);
+    void drawArcId(QPainter &, double, double, double angle);
     
 signals:
     void myTimeout();

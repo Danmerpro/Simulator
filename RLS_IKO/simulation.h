@@ -17,6 +17,7 @@
 #include <QImage>
 #include <QPair>
 #include <QList>
+#include <QMouseEvent>
 
 #include "mapobj.h"
 #include "routepoint.h"
@@ -34,6 +35,13 @@ typedef struct
     bool complete;
     double angle;
 }SIM_OBJ;
+
+typedef struct
+{
+    int index;
+    double angle;
+    QPointF point;
+} BufferEntry;
 
 class Simulation : public QWidget
 {
@@ -55,13 +63,15 @@ private:
     double accuracy;//точность обнаружения точки
     int hordHalf;//половина длины хорды отметки о цели
     int arcWidth; //толщина дуг отметки и опознования
-    QList< QPair< QPointF, double> > drawnPoints;
+    double accuracyClick; //точность при кликах мышкой
+    QList< BufferEntry > drawnPoints;
 
 public:
     explicit Simulation(QList<MapObj*> *_objects, QWidget *parent = 0);
 
 protected:
     void paintEvent(QPaintEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
 
 private:
     void drawLenArcks(QPainter &);
@@ -73,6 +83,8 @@ private:
     void drawRandomPoints(QPainter &);
     void drawPoint(QPainter &, double, double, double angle, bool enemy = false);
     void drawArcId(QPainter &, double, double, double angle);
+    bool checkClick(double x1, double y1, double x2, double y2);
+    int findClosest(QList<BufferEntry> &, double, double);
     
 signals:
     void myTimeout();

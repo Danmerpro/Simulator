@@ -56,11 +56,12 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     accuracy = 4;
     hordHalf = 10;
     arcWidth = 3;
+    accuracyClick = 10;
 }
 
 void Simulation::paintEvent(QPaintEvent *)
 {
-    qDebug(QString::number(radarAngle/M_PI).toStdString().c_str());
+   // qDebug(QString::number(radarAngle/M_PI).toStdString().c_str());
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
@@ -75,7 +76,8 @@ void Simulation::paintEvent(QPaintEvent *)
     drawRandomPoints(painter);
 
 
-    radarAngle += 0.0251;
+   // radarAngle += 0.0251;
+    radarAngle += 0.011;
     if(radarAngle >= 2*M_PI)
         radarAngle -= 2*M_PI;
 }
@@ -513,8 +515,8 @@ void Simulation::drawOldPoints(QPainter &painter)
     //обработать нарисованные точки, которые в слепой зоне надо удалить из списка
     for(int i = 0; i < drawnPoints.size();)
     {
-        QPair<QPointF, double> p = drawnPoints.at(i);
-        double ang = p.second;
+        BufferEntry p = drawnPoints.at(i);
+        double ang = p.angle;
         //слепая зона - от realAngle и до realAngle + пи/2
         double realAngle = (radarAngle >= M_PI/2) ? radarAngle - M_PI/2 : 1.5*M_PI + radarAngle;
         if(realAngle > 1.5*M_PI) // надо сделать две проверки
@@ -543,7 +545,7 @@ void Simulation::drawOldPoints(QPainter &painter)
             }
         }
 
-        drawPoint(painter, p.first.x(), p.first.y(), p.second);
+        drawPoint(painter, p.point.x(), p.point.y(), p.angle);
         i++;
     }
 }
@@ -571,8 +573,6 @@ void Simulation::drawPoints(QPainter &painter)
         double realAngle = (radarAngle >= M_PI/2) ? radarAngle - M_PI/2 : 1.5*M_PI + radarAngle;
         double y1 =centerPoint.y() -  radius * sin(realAngle);
         double x1 =centerPoint.x() -  radius * cos(realAngle);
-        //qDebug(QString("x = " + QString::number(x) + " bx = " + QString::number(x1)).toStdString().c_str());
-
 
         double k = (centerPoint.y() - y1) / (centerPoint.x() - x1);
 
@@ -609,7 +609,11 @@ void Simulation::drawPoints(QPainter &painter)
             drawPoint(painter,x,y,realAngle);
 
             //сохранить точку в список точек
-            drawnPoints.append( QPair<QPointF, double>( obj.curPoint, realAngle));
+            BufferEntry be;
+            be.angle = realAngle;
+            be.point =  obj.curPoint;
+            be.index = i;
+            drawnPoints.append( be );
         }
     }
 }
@@ -637,7 +641,7 @@ void Simulation::drawPoint(QPainter &painter, double x, double y, double angle, 
 
     //вычислим угол
     double ang = 180 * asin(hordHalf/arcOffset) / M_PI;
-    qDebug(QString("ang = " + QString::number(ang)).toStdString().c_str());
+   // qDebug(QString("ang = " + QString::number(ang)).toStdString().c_str());
 
     painter.drawArc(xr,yr, arcOffset*2, arcOffset*2, (360 - ang - angle * 180/M_PI) * 16, 2*ang * 16  );
 
@@ -680,7 +684,7 @@ void Simulation::drawArcId(QPainter &painter, double x, double y, double angle)
 
     //вычислим угол
     double ang = 180 * asin((hordHalf + 12) /arcOffset) / M_PI;
-    qDebug(QString("ang = " + QString::number(ang)).toStdString().c_str());
+    //qDebug(QString("ang = " + QString::number(ang)).toStdString().c_str());
 
     painter.drawArc(xr,yr, arcOffset*2, arcOffset*2, (360 - ang - angle * 180/M_PI) * 16, 2*ang * 16  );
 
@@ -735,4 +739,61 @@ void Simulation::drawRandomPoints(QPainter &painter)
         painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.005)), centerPoint.y() + (-pointD * cos(radarAngle - 0.005)));
         painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.01)), centerPoint.y() + (-pointD * cos(radarAngle - 0.01)));
     }
+}
+
+bool Simulation::checkClick(double x1, double y1, double x2, double y2)
+{
+    x1 = x1 - x2;
+    y1 = y1 - y2;
+
+    x1 = (x1 >= 0) ? x1 : -x1;
+    y1 = (y1 >= 0) ? y1 : -y1;
+    return (x1 <= accuracyClick) && (y1 <= accuracyClick);
+
+}
+
+void Simulation::mouseReleaseEvent(QMouseEvent *e)
+{
+    int cx = e->x();
+    int cy = e->y();
+    QList<BufferEntry> candidates;
+    foreach(BufferEntry be, drawnPoints)
+    {
+        double x = be.point.x();
+        double y = be.point.y();
+        if(checkClick(cx, cy, x, y))
+        {
+            //запишем точку в кандидаты
+            candidates.append(be);
+        }
+    }
+
+    if(candidates.size() == 0)//никого не занесли
+    {
+        //вызов добавления
+        qDebug(QString("no target, x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
+
+    }
+    else {
+        int id = findClosest(candidates, cx, cy);
+        qDebug(QString(QString::number(id) + " x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
+    }
+}
+
+int Simulation::findClosest(QList<BufferEntry> &l, double x, double y)
+{
+    int minind = l.first().index;
+    double minlen = pow(x - l.first().point.x(), 2) + pow(y - l.first().point.y(), 2);
+
+    for(int i = 1; i < l.size(); i++)
+    {
+        BufferEntry be = l.at(i);
+        double len = pow(x - be.point.x(), 2) + pow(y - be.point.y(), 2);
+        if( len < minlen)
+        {
+            minlen = len;
+            minind = l.at(i).index;
+        }
+    }
+    return minind;
 }

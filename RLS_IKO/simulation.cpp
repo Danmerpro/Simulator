@@ -1,22 +1,12 @@
 #include "simulation.h"
 
-#include <QThread> //for test
-
 Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     QWidget(parent)
 {
-    QBrush bgrBrush(Qt::black);
-    QPalette plt = this->palette();
-    plt.setBrush(QPalette::Background, bgrBrush);
-    setPalette(plt);
-
     this->setFixedSize(1000,1000);
 
-    ScreenTemplate = new QImage(1000, 1000, QImage::Format_RGB32);
-    ScreeenBuffer = new QImage( 1000, 1000, QImage::Format_RGB32);
-
     timerForMenu = new QTimer();
-    timerForMenu->setInterval(1000);
+    timerForMenu->setInterval(100);
 
     ptimer = new QTimer();
     ptimer->setInterval(40);
@@ -24,11 +14,9 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     objCount = _objects->size();
     simObjects = new SIM_OBJ[objCount];
 
-    radarAngle = 3*M_PI / 2;
-
     int i = 0;
     QList<MapObj *>::Iterator it = _objects->begin();
-    for( ; it != _objects->end() ; it++, i++ )
+    for( it ; it != _objects->end() ; it++, i++ )
     {
         simObjects[i].obj = (*it);
         simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
@@ -43,13 +31,17 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
         simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle), 2 )) /
                 ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
         simObjects[i].complete = false;
-        simObjects[i].timeCounter = 0;
+        simObjects[i].started = false;
+        simObjects[i].startTime = QTime::currentTime();
     }
 
 
     connect(ptimer, SIGNAL(timeout()), this, SLOT(updateSimulation()));
     connect(timerForMenu, SIGNAL(timeout()), this, SIGNAL(myTimeout()));
 
+    timeBetweenUpdates = new QTime(0, 0, 0, 0);
+
+    radarAngle = 3*M_PI / 2;
     centerPoint.setX(500);
     centerPoint.setY(500);
     radius = 400;
@@ -57,7 +49,36 @@ Simulation::Simulation(QList<MapObj *> *_objects, QWidget *parent) :
     hordHalf = 10;
     arcWidth = 3;
     accuracyClick = 10;
+
+
 }
+
+void Simulation::setObjects(QList<MapObj*> *_objects)
+{
+    objCount = _objects->size();
+    simObjects = new SIM_OBJ[objCount];
+
+    int i = 0;
+
+    for( QList<MapObj *>::Iterator it = _objects->begin(); it != _objects->end() ; it++, i++ )
+    {
+        simObjects[i].obj = (*it);
+        simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
+        simObjects[i].curPoint = (*(*it)->getPoints()->begin());
+        simObjects[i].angle = atan2( ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000)
+                , ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000 ) );
+        simObjects[i].vX0 = (*simObjects[i].lastInCurRoute).getSpeed()*cos(simObjects[i].angle);
+        simObjects[i].vY0 = (*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle);
+
+        simObjects[i].aX = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*cos(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*cos(simObjects[i].angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000) /2;
+        simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle), 2 )) /
+                ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
+        simObjects[i].complete = false;
+        simObjects[i].started = false;
+        simObjects[i].startTime = QTime::currentTime();
+    }
+ }
 
 void Simulation::paintEvent(QPaintEvent *)
 {
@@ -75,30 +96,33 @@ void Simulation::paintEvent(QPaintEvent *)
 
     drawRandomPoints(painter);
 
-
-   // radarAngle += 0.0251;
-    radarAngle += 0.011;
+    radarAngle += 0.0251;
     if(radarAngle >= 2*M_PI)
         radarAngle -= 2*M_PI;
 }
 
+
 void Simulation::start()
 {
-    timeElapsed = new QTime();
+    timeElapsed = new QTime(0, 0, 0, 0);
+    timeBetweenUpdates->start();
     timerForMenu->start();
     ptimer->start();
+ //   QMessageBox::warning(this, "START", "START");
 }
 
 void Simulation::pause()
 {
     timerForMenu->stop();
     ptimer->stop();
+ //   QMessageBox::warning(this, "PAUSE", "PAUSE");
 }
 
 void Simulation::stop()
 {
     timerForMenu->stop();
     ptimer->stop();
+    delete timeElapsed;
     for( int i = 0 ; i < objCount ; i++ )
     {
         simObjects[i].lastInCurRoute = simObjects[i].obj->getPoints()->begin();
@@ -113,26 +137,44 @@ void Simulation::stop()
         simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle), 2 )) /
                 ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
         simObjects[i].complete = false;
-        simObjects[i].timeCounter = 0;
+        simObjects[i].started = false;
+        simObjects[i].startTime = QTime::currentTime();
     }
     update();
+//    QMessageBox::warning(this, "STOP", "STOP");
 }
 
 void Simulation::updateSimulation()
 {
     bool leftBoundX, rigthBoundX;
     bool leftBoundY, rigthBoundY;
+
+    int timeAdd = timeBetweenUpdates->restart();
+
     leftBoundX = rigthBoundX = leftBoundY = rigthBoundY = false;
     bool trainEnd = true;
     for( int i = 0 ; i < objCount ; i++ )
     {
         if( simObjects[i].complete == false )
-        {
             trainEnd = false;
-            simObjects[i].curPoint.setX( ((*simObjects[i].lastInCurRoute).x()*1000 + simObjects[i].vX0 * simObjects[i].timeCounter*0.04 +
-                                         simObjects[i].aX * pow( simObjects[i].timeCounter*0.04, 2 ) / 2)/1000 );
-            simObjects[i].curPoint.setY( ((*simObjects[i].lastInCurRoute).y()*1000 + simObjects[i].vY0 * simObjects[i].timeCounter*0.04 +
-                                         simObjects[i].aY * pow( simObjects[i].timeCounter*0.04, 2 ) / 2)/1000 );
+        if( simObjects[i].complete == false && *timeElapsed >= simObjects[i].obj->getStartTime() )
+        {
+
+            if( simObjects[i].started == false )
+            {
+                simObjects[i].started = true;
+                simObjects[i].startTime = QTime::currentTime();
+            }
+            double stD = simObjects[i].startTime.hour() * 3600 + simObjects[i].startTime.minute() * 60 +
+                    simObjects[i].startTime.second() + (double)simObjects[i].startTime.msec() / 1000;
+            QTime ct = QTime::currentTime();
+
+            double curD = ct.hour() * 3600 + ct.minute() * 60 +
+                    ct.second() + (double)ct.msec() / 1000;
+            simObjects[i].curPoint.setX( ((*simObjects[i].lastInCurRoute).x()*1000 + simObjects[i].vX0 * (curD - stD) +
+                                         simObjects[i].aX * pow( (curD - stD), 2 ) / 2)/1000 );
+            simObjects[i].curPoint.setY( ((*simObjects[i].lastInCurRoute).y()*1000 + simObjects[i].vY0 * (curD - stD) +
+                                         simObjects[i].aY * pow( (curD - stD), 2 ) / 2)/1000 );
 
 
             if( simObjects[i].vX0 < 0 && simObjects[i].curPoint.x() < (*(simObjects[i].lastInCurRoute+1)).x() )
@@ -170,27 +212,132 @@ void Simulation::updateSimulation()
                             ((*(simObjects[i].lastInCurRoute+1)).x()*1000 - (*simObjects[i].lastInCurRoute).x()*1000) /2;
                     simObjects[i].aY = (pow( (*(simObjects[i].lastInCurRoute+1)).getSpeed()*sin(simObjects[i].angle), 2 ) - pow((*simObjects[i].lastInCurRoute).getSpeed()*sin(simObjects[i].angle), 2 )) /
                             ((*(simObjects[i].lastInCurRoute+1)).y()*1000 - (*simObjects[i].lastInCurRoute).y()*1000) /2;
-                    simObjects[i].timeCounter = 0;
+                    simObjects[i].startTime = QTime::currentTime();
                 }
                 else
                 {
                     simObjects[i].complete = true;
                 }
             }
-            else
-            {
-                simObjects[i].timeCounter++;
-            }
         }
     }
     if( trainEnd == false )
     {
+        *timeElapsed = timeElapsed->addMSecs(timeAdd);
         update();
     }
     else
     {
         stop();
     }
+}
+
+void Simulation::drawLenArcks(QPainter &painter)
+{
+    QColor arcColor(Qt::green);
+    arcColor.setAlpha(255);
+    QPen pen;
+    pen.setColor(arcColor);
+    painter.setPen(pen);
+
+    //нарисуем 8 круговых отметок
+    painter.drawArc( 100, 100, 800, 800, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 150, 150, 700, 700, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 200, 200, 600, 600, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 250, 250, 500, 500, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 300, 300, 400, 400, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 350, 350, 300, 300, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 400, 400, 200, 200, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+    painter.drawArc( 450, 450, 100, 100, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
+}
+
+void Simulation::drawRandomPoints(QPainter &painter)
+{
+    QPen pen;
+
+    pen.setColor(Qt::green);
+    pen.setWidth(2);
+    painter.setPen(pen);
+
+    int pointsAmount = 1000;
+
+    pen.setWidth(1);
+    pen.setColor(Qt::green);
+    painter.setPen(pen);
+
+    for( int i = 0 ; i < pointsAmount ; i++ )
+    {
+        double pointAngle = radarAngle + log((double)rand() / RAND_MAX) / 1.5;
+        int pointD = rand() % 400;
+        painter.drawPoint(centerPoint.x() + (pointD * sin(pointAngle)), centerPoint.y() + (-pointD * cos(pointAngle)));
+    }
+
+    pointsAmount = 200;
+
+    for( int i = 0 ; i < pointsAmount ; i++ )
+    {
+        int pointD = rand() % 400;
+        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle)), centerPoint.y() + (-pointD * cos(radarAngle)));
+        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.005)), centerPoint.y() + (-pointD * cos(radarAngle - 0.005)));
+        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.01)), centerPoint.y() + (-pointD * cos(radarAngle - 0.01)));
+    }
+}
+
+bool Simulation::checkClick(double x1, double y1, double x2, double y2)
+{
+    x1 = x1 - x2;
+    y1 = y1 - y2;
+
+    x1 = (x1 >= 0) ? x1 : -x1;
+    y1 = (y1 >= 0) ? y1 : -y1;
+    return (x1 <= accuracyClick) && (y1 <= accuracyClick);
+
+}
+
+void Simulation::mouseReleaseEvent(QMouseEvent *e)
+{
+    int cx = e->x();
+    int cy = e->y();
+    QList<BufferEntry> candidates;
+    foreach(BufferEntry be, drawnPoints)
+    {
+        double x = be.point.x();
+        double y = be.point.y();
+        if(checkClick(cx, cy, x, y))
+        {
+            //запишем точку в кандидаты
+            candidates.append(be);
+        }
+    }
+
+    if(candidates.size() == 0)//никого не занесли
+    {
+        //вызов добавления
+        qDebug(QString("no target, x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
+
+    }
+    else {
+        int id = findClosest(candidates, cx, cy);
+        qDebug(QString(QString::number(id) + " x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
+    }
+}
+
+int Simulation::findClosest(QList<BufferEntry> &l, double x, double y)
+{
+    int minind = l.first().index;
+    double minlen = pow(x - l.first().point.x(), 2) + pow(y - l.first().point.y(), 2);
+
+    for(int i = 1; i < l.size(); i++)
+    {
+        BufferEntry be = l.at(i);
+        double len = pow(x - be.point.x(), 2) + pow(y - be.point.y(), 2);
+        if( len < minlen)
+        {
+            minlen = len;
+            minind = l.at(i).index;
+        }
+    }
+    return minind;
 }
 
 void Simulation::draw30degLines(QPainter & painter )
@@ -545,7 +692,7 @@ void Simulation::drawOldPoints(QPainter &painter)
             }
         }
 
-        drawPoint(painter, p.point.x(), p.point.y(), p.angle);
+        drawPoint(painter, p.point.x(), p.point.y(), p.angle,p.enemy);
         i++;
     }
 }
@@ -606,14 +753,18 @@ void Simulation::drawPoints(QPainter &painter)
 
         if(checkRoutePoint(xcheck, ycheck, x, y))//точка совпадает с линией
         {
-            drawPoint(painter,x,y,realAngle);
-
             //сохранить точку в список точек
             BufferEntry be;
             be.angle = realAngle;
             be.point =  obj.curPoint;
             be.index = i;
+            if(obj.obj->getAsseccory() == ours)
+                be.enemy = false;
+            else
+                be.enemy = true;
             drawnPoints.append( be );
+
+            drawPoint(painter,x,y,realAngle,be.enemy);
         }
     }
 }
@@ -688,112 +839,4 @@ void Simulation::drawArcId(QPainter &painter, double x, double y, double angle)
 
     painter.drawArc(xr,yr, arcOffset*2, arcOffset*2, (360 - ang - angle * 180/M_PI) * 16, 2*ang * 16  );
 
-}
-
-void Simulation::drawLenArcks(QPainter &painter)
-{
-    QColor arcColor(Qt::green);
-    arcColor.setAlpha(255);
-    QPen pen;
-    pen.setColor(arcColor);
-    painter.setPen(pen);
-
-    //нарисуем 8 круговых отметок
-    painter.drawArc( 100, 100, 800, 800, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 150, 150, 700, 700, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 200, 200, 600, 600, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 250, 250, 500, 500, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 300, 300, 400, 400, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 350, 350, 300, 300, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 400, 400, 200, 200, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-    painter.drawArc( 450, 450, 100, 100, -(radarAngle * 180 / M_PI - 90 ) * 16 , 270 * 16 );
-}
-
-void Simulation::drawRandomPoints(QPainter &painter)
-{
-    QPen pen;
-
-    pen.setColor(Qt::green);
-    pen.setWidth(2);
-    painter.setPen(pen);
-
-    int pointsAmount = 1000;
-
-    pen.setWidth(1);
-    pen.setColor(Qt::green);
-    painter.setPen(pen);
-
-    for( int i = 0 ; i < pointsAmount ; i++ )
-    {
-        double pointAngle = radarAngle + log((double)rand() / RAND_MAX) / 1.5;
-        int pointD = rand() % 400;
-        painter.drawPoint(centerPoint.x() + (pointD * sin(pointAngle)), centerPoint.y() + (-pointD * cos(pointAngle)));
-    }
-
-    pointsAmount = 200;
-
-    for( int i = 0 ; i < pointsAmount ; i++ )
-    {
-        int pointD = rand() % 400;
-        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle)), centerPoint.y() + (-pointD * cos(radarAngle)));
-        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.005)), centerPoint.y() + (-pointD * cos(radarAngle - 0.005)));
-        painter.drawPoint(centerPoint.x() + (pointD * sin(radarAngle - 0.01)), centerPoint.y() + (-pointD * cos(radarAngle - 0.01)));
-    }
-}
-
-bool Simulation::checkClick(double x1, double y1, double x2, double y2)
-{
-    x1 = x1 - x2;
-    y1 = y1 - y2;
-
-    x1 = (x1 >= 0) ? x1 : -x1;
-    y1 = (y1 >= 0) ? y1 : -y1;
-    return (x1 <= accuracyClick) && (y1 <= accuracyClick);
-
-}
-
-void Simulation::mouseReleaseEvent(QMouseEvent *e)
-{
-    int cx = e->x();
-    int cy = e->y();
-    QList<BufferEntry> candidates;
-    foreach(BufferEntry be, drawnPoints)
-    {
-        double x = be.point.x();
-        double y = be.point.y();
-        if(checkClick(cx, cy, x, y))
-        {
-            //запишем точку в кандидаты
-            candidates.append(be);
-        }
-    }
-
-    if(candidates.size() == 0)//никого не занесли
-    {
-        //вызов добавления
-        qDebug(QString("no target, x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
-
-    }
-    else {
-        int id = findClosest(candidates, cx, cy);
-        qDebug(QString(QString::number(id) + " x =  " + QString::number(cx) + " y = " + QString::number(cy)).toStdString().c_str());
-    }
-}
-
-int Simulation::findClosest(QList<BufferEntry> &l, double x, double y)
-{
-    int minind = l.first().index;
-    double minlen = pow(x - l.first().point.x(), 2) + pow(y - l.first().point.y(), 2);
-
-    for(int i = 1; i < l.size(); i++)
-    {
-        BufferEntry be = l.at(i);
-        double len = pow(x - be.point.x(), 2) + pow(y - be.point.y(), 2);
-        if( len < minlen)
-        {
-            minlen = len;
-            minind = l.at(i).index;
-        }
-    }
-    return minind;
 }

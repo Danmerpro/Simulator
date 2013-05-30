@@ -15,8 +15,7 @@
 #include <QPalette>
 #include <iostream>
 #include <QImage>
-#include <QPair>
-#include <QList>
+#include <QMessageBox>
 #include <QMouseEvent>
 
 #include "mapobj.h"
@@ -31,7 +30,8 @@ typedef struct
     double aY;
     double vX0;
     double vY0;
-    int timeCounter;
+    QTime startTime;
+    bool started;
     bool complete;
     double angle;
 }SIM_OBJ;
@@ -41,6 +41,7 @@ typedef struct
     int index;
     double angle;
     QPointF point;
+    bool enemy;
 } BufferEntry;
 
 class Simulation : public QWidget
@@ -53,11 +54,8 @@ private:
     QTimer *ptimer;
     QTimer *timerForMenu;
     QTime *timeElapsed;
-    QBrush* brush;
-    QLineF* radarLine;
+    QTime *timeBetweenUpdates;
     double radarAngle;
-    QImage* ScreenTemplate;
-    QImage* ScreeenBuffer;
     QPoint centerPoint;
     int radius;
     double accuracy;//точность обнаружения точки
@@ -68,9 +66,10 @@ private:
 
 public:
     explicit Simulation(QList<MapObj*> *_objects, QWidget *parent = 0);
+    void setObjects(QList<MapObj*> *_objects);
 
 protected:
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *event);
     void mouseReleaseEvent(QMouseEvent *);
 
 private:
@@ -85,16 +84,16 @@ private:
     void drawArcId(QPainter &, double, double, double angle);
     bool checkClick(double x1, double y1, double x2, double y2);
     int findClosest(QList<BufferEntry> &, double, double);
-    
+
 signals:
     void myTimeout();
-    
+
 public slots:
     void start();
     void pause();
     void stop();
     void updateSimulation();
-    
+
 };
 
 #endif // SIMULATION_H

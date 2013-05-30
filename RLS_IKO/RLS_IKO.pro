@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,9 +16,13 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     simulation.cpp \
     routepoint.cpp \
-    mapobj.cpp
+    mapobj.cpp \
+    connectionmenu.cpp \
+    pointslist.cpp
 
 HEADERS  += mainwindow.h \
     simulation.h \
     routepoint.h \
-    mapobj.h
+    mapobj.h \
+    connectionmenu.h \
+    pointslist.h
